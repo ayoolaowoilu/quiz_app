@@ -34,7 +34,7 @@ export default function Multi(){
        setstage({...stage,[e.target.name]:e.target.value})
     }
     const handlepushquestion = ()=>{
-            setquestions([...questions,stage])
+            setquestions((que:any)=>[...que , stage])
             console.log(questions)
             setstage({
                 question:"",

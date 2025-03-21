@@ -2,7 +2,7 @@ import React, { createContext,useEffect,useState } from "react";
 import axios from "axios"
 const dataContext = createContext({email:"Session Expired"})
 
-const Provider: React.FC =( {children} )=>{
+const Provider: React.FC <{children:any}>=( {children} )=>{
     const [data,setdata] = useState({
         email:"",
     })

@@ -26,7 +26,7 @@ export default function Saq(){
         }
    
     const handlepushquestion = ()=>{
-            setquestions([...questions,stage])
+      setquestions((que:any)=>[...que , stage])
           
     }
     const logout =()=>{

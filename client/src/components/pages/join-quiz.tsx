@@ -275,7 +275,7 @@ export default function Join(){
      <div className="text-center font-bold"> {msg}</div>
      {!msg?.includes("##") ? <div className="mx-auto font-bold m-[10px]">Room_code : {room?._code}</div> : <div>404 not found</div>  }
      {!msg.includes("##") ? <div className="flex flex-col ">
-        <div className="m-[10px] font-bold">Questions : {room?.questions?.length}</div>
+        <div className="m-[10px] font-bold">Questions : {questions?.length}</div>
         <div className="m-[10px] font-bold">Type : {room?._code?.split("-")[0] === "mcq" ? "Multiple choice question" : room?._code?.split("-")[0] === "saq" ? "Short answer question" : "True or false question" }</div>
         <div className="font-bold m-[10px]">Date created : {room?.date_created?.split("T")[0]}</div>
         <small className="m-[10px]">by :{room?._user}</small>

@@ -29,7 +29,7 @@ export default function Tof(){
       setcode(e.target.value)
      }
     const handlepushquestion = ()=>{
-            setquestions([...questions,stage])
+      setquestions((que:any)=>[...que , stage])
           
     }
     const handlesubmit =async()=>{

@@ -14,6 +14,7 @@ export default function Login(){
     const handlechange =(e:React.ChangeEvent<HTMLInputElement>)=>{
         setprofile({...profile,[e.target.name]:e.target.value})
     }
+    console.log(import.meta.env.VITE_URL)
     const handlesubmit =async(e:FormEvent)=>{
       e.preventDefault()
       setloading(true)
