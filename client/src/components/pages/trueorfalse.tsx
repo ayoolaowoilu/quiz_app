@@ -161,7 +161,7 @@ export default function Tof(){
           >
             <div className="p-2">
               <a
-                href="#"
+                href="/home"
                 className="block rounded-lg px-4 py-2 text-sm text-gray-500 hover:bg-gray-50 hover:text-gray-700"
                 role="menuitem"
               >
@@ -227,7 +227,7 @@ export default function Tof(){
   </div>
 </header>
                {not ? <div
-                className={msg?.includes("##") ? " fixed top-[60px] w-full p-[10px] bg-red-50 text-red-700" : "fixed top-[60px] p-[10px] bg-green-50 text-green-700"}>
+                className={msg?.includes("##") ? " fixed top-[60px] w-full p-[10px] bg-red-50 text-red-700" : "w-full fixed top-[60px] p-[10px] bg-green-50 text-green-700"}>
                  {msg}
                 </div> : null}
                <h1 className="text-center font-bold m-[10px] text-3xl">True or False question setter</h1>
