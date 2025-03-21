@@ -180,7 +180,7 @@ export default function Create(){
   </div>
 </header>
                <h1 className="text-center font-bold m-[10px] text-3xl">Choose a question type to set</h1>
-               <div className="flex justify-center">
+               <div className="flex sm:flex-row flex-col justify-center">
                   
                   {cards?.map((card,index)=>{
                      return(

@@ -171,7 +171,7 @@ export default function Home(){
     </div>
   </div>
 </header>
-        <div className="flex justify-center">
+        <div className="flex flex-col sm:flex-row  justify-center">
    
    {cards?.map((card,index)=>{
       return(
