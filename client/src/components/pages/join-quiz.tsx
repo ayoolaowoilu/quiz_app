@@ -25,6 +25,7 @@ export default function Join(){
     const [room,setroom] = useState({
       _code:"",
       _user:"",
+      _time:"5min",
       date_created:""
     })
     const [msg,setmsg] = useState<String>("")
@@ -63,6 +64,63 @@ export default function Join(){
       localStorage.removeItem("token")
       window.location.reload()
     }
+    const [min,setmin] = useState<number>(0)
+    const [sec,setsec] = useState<number>(0)
+    const submitquiz = async()=>{
+        setresults(true)
+        setloading(true)
+      try {
+        const payload ={
+          passed:passed?.length,
+          failed:failed?.length,
+          code:room?._code,
+         user:data?.email,
+         time:room?._time
+        }
+        const resp = await axios.post(`${import.meta.env.VITE_URL}/quiz/subscores`,payload)
+        console.log(resp)
+        setloading(false)
+        
+      } catch (err) {
+        console.log(err)
+      }
+    }
+     const timer =()=>{
+      if (room?._time === "5min"){
+        setmin(5)
+        setsec(0)
+     }else if(room?._time === "15min"){
+       setmin(15)
+       setsec(0)
+     }else if(room?._time === "25min"){
+       setmin(25)
+       setsec(0)
+     }else if(room?._time === "30min"){
+      setmin(30)
+      setsec(0) 
+     }else if(room?._time === "1hr"){
+       setmin(60)
+       setsec(0)
+     }else if(room?._time === "1/2hr"){
+       setmin(90)
+       setsec(0)
+     }else if(room?._time === "2hr"){
+       setmin(120)
+       setsec(0)
+     }
+     if (sec == 0){
+      setmin((mu:any)=>Number(mu) - 1)
+      setsec(59)
+     }else{
+      setInterval(() => {
+        setsec((se:any)=>Number(se)-1)
+      }, 1000);
+     
+     }
+     if (min == 0 && sec == 0){
+      submitquiz()
+     }
+     }
     return(
         <>
  <header className="bg-white">
@@ -177,7 +235,7 @@ export default function Join(){
             </div>
 
             <div className="p-2">
-              <form  action="#">
+              
                 <button
                   type="submit"
                   onClick={logout}
@@ -201,7 +259,7 @@ export default function Join(){
 
                   Logout
                 </button>
-              </form>
+             
             </div>
           </div>
           </button>
@@ -277,10 +335,14 @@ export default function Join(){
      {!msg.includes("##") ? <div className="flex flex-col ">
         <div className="m-[10px] font-bold">Questions : {questions?.length}</div>
         <div className="m-[10px] font-bold">Type : {room?._code?.split("-")[0] === "mcq" ? "Multiple choice question" : room?._code?.split("-")[0] === "saq" ? "Short answer question" : "True or false question" }</div>
+        <div className="m-[10px] font-bold">Allocated time : {room?._time}</div>
         <div className="font-bold m-[10px]">Date created : {room?.date_created?.split("T")[0]}</div>
         <small className="m-[10px]">by :{room?._user}</small>
         <button
-        onClick={()=>settaker(true)} className="p-[10px] text-white bg-blue-500 rounded-xl ">Enter Quiz?</button>
+        onClick={()=>{
+          settaker(true)
+          timer()
+        }} className="p-[10px] text-white bg-blue-500 rounded-xl ">Enter Quiz?</button>
      </div> : null }
   </div> : null}
 </section>
@@ -315,11 +377,12 @@ export default function Join(){
     })}
   </div>
  </div> : <div className="p-[10px]">
-  
+      <div className={min < 5 ? "font-bold m-[10px] text-red-700 bg-white border-4 p-[10px] fixed top-[60px] shadow-xl" : "font-bold m-[10px] text-green-700 bg-white border-4 p-[10px] fixed top-[60px] shadow-xl" }>Timer : {min < 10 ? `0${min}` : `${min}`} : {sec < 10 ? `0${sec}` : `${sec}`} </div>
     {questions?.map((que,index)=>{
       
       return(
         <div className="m-[10px] p-[10px] border-4 ">
+          
           <div className="m-[10px] font-bold ">{index+1}</div>
           <div className="m-[10px] font-bold">{que?.question}</div>
           <ul>
@@ -401,24 +464,7 @@ export default function Join(){
         </div>
       )
     })}
-    <button  onClick={
-      
-      async()=>{
-        setresults(true)
-      try {
-        const payload ={
-          passed:passed?.length,
-          failed:failed?.length,
-          code:room?._code,
-         user:data?.email
-        }
-        const resp = await axios.post(`${import.meta.env.VITE_URL}/quiz/subscores`,payload)
-        console.log(resp)
-        
-      } catch (err) {
-        console.log(err)
-      }
-    }} className="p-[10px] text-white bg-blue-500 rounded-xl">Submit</button>
+    <button onClick={submitquiz} className="p-[10px] text-white bg-blue-500 rounded-xl">Submit</button>
  </div> }
         </>
     )

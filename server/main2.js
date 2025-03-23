@@ -16,12 +16,12 @@ if(db){
 
 quiz.post("/question",async(req,res)=>{
     try {
-        const { code,user,questions } = req.body
+        const { code,user,questions,time } = req.body
         const [resp] = await db.query("SELECT COUNT(*) as count FROM quiz WHERE _code = ?" ,[code])
         if(resp[0].count > 0) {
             res.send({msg:"## A room with this code already exists"})
         }else{
-            await db.query("INSERT INTO quiz(_code,_user,questions) VALUES(?,?,?)",[code,user,JSON.stringify(questions)])
+            await db.query("INSERT INTO quiz(_code,_user,questions,_time) VALUES(?,?,?)",[code,user,JSON.stringify(questions),time])
             res.send({msg:"Questions Added"})
         }
     } catch (err) {

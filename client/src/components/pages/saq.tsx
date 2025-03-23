@@ -15,6 +15,7 @@ export default function Saq(){
         o1:String,
         answer:String
     }
+    const [time,settime] = useState<String>("5min")
     const [questions,setquestions] = useState<question[] | null>([])
     const [stage , setstage ] = useState({
         question:"",
@@ -40,6 +41,7 @@ export default function Saq(){
         setmsg("")
         const payload = {
           code:"saq-"+code,
+          time:time,
           user:data?.email,
           questions
         }
@@ -231,6 +233,16 @@ export default function Saq(){
                <div className="mx-auto flex-col flex justify-center">
                <div className="text-center">Create Room Code</div>
                <input type="text" onChange={handleinputschange}   className="mx-auto border-4 p-[10px]  m-[10px]" placeholder="Input desired code" />
+               <div className=" text-center">Enter allocated quiz duration</div>
+                               <select name="" id="" onChange={(e:React.ChangeEvent<HTMLSelectElement>)=>settime(e.target.value)} className="m-[10px] border-4 p-[10px] mx-auto">
+                                 <option value="2hrs">2 hrs</option>
+                                 <option value="1/2hrs">1/2hrs</option>
+                                 <option value="1hrs">1hrs</option>
+                                 <option value="30min">30min</option>
+                                 <option value="25min">25min</option>
+                                 <option value="15min">15min</option>
+                                 <option value="5min" selected >5min</option>
+                               </select>
                </div>
                <div>
                 {questions?.map((question,index)=>{

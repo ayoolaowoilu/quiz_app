@@ -32,6 +32,7 @@ export default function Tof(){
       setquestions((que:any)=>[...que , stage])
           
     }
+    const [time,settime] = useState<String>("5min")
     const handlesubmit =async()=>{
           try {
             setloading(true)
@@ -39,6 +40,7 @@ export default function Tof(){
             setmsg("")
             const payload = {
               code:"tof-"+code,
+              time:time,
               user:data?.email,
               questions
             }
@@ -193,7 +195,7 @@ export default function Tof(){
             </div>
 
             <div className="p-2">
-              <form action="#">
+             
                 <button
                   type="submit"
                   onClick={logout}
@@ -217,7 +219,7 @@ export default function Tof(){
 
                   Logout
                 </button>
-              </form>
+           
             </div>
           </div>
           </button>
@@ -234,6 +236,16 @@ export default function Tof(){
                <div className="mx-auto flex-col flex justify-center">
                <div  className="text-center">Create Room Code</div>
                <input onChange={handleinputschange} type="text"  className="mx-auto border-4 p-[10px]  m-[10px]" placeholder="" />
+               <div className=" text-center">Enter allocated quiz duration</div>
+                               <select name="" id="" onChange={(e:React.ChangeEvent<HTMLSelectElement>)=>settime(e.target.value)} className="m-[10px] border-4 p-[10px] mx-auto">
+                                 <option value="2hrs">2 hrs</option>
+                                 <option value="1/2hrs">1/2hrs</option>
+                                 <option value="1hrs">1hrs</option>
+                                 <option value="30min">30min</option>
+                                 <option value="25min">25min</option>
+                                 <option value="15min">15min</option>
+                                 <option value="5min" selected >5min</option>
+                               </select>
                </div>
                <div>
                 {questions?.map((question,index)=>{

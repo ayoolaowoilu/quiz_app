@@ -24,6 +24,7 @@ export default function Multi(){
         o4:"",
         answer:""
     })
+    const [time,settime] = useState<String>("5min")
    
    const [loading,setloading]= useState<boolean>(false)
    const [msg,setmsg] = useState<String>("")
@@ -52,6 +53,7 @@ export default function Multi(){
       setmsg("")
       const payload = {
         code:"mcq-"+code,
+        time:time,  
         user:data?.email,
         questions
       }
@@ -64,8 +66,6 @@ export default function Multi(){
           setmsg("")
         }, 5000);
       }else{
-        
-        //
         const resp = await axios.post(`${import.meta.env.VITE_URL}/quiz/question`,payload)
         setmsg(resp.data.msg)
         setloading(false) 
@@ -92,6 +92,7 @@ export default function Multi(){
     localStorage.removeItem("token")
     window.location.reload()
   }
+  
     return(
         <>
  <header className="bg-white">
@@ -248,6 +249,16 @@ export default function Multi(){
                <div className="mx-auto flex-col flex justify-center">
                <div className="text-center">Create Room Code</div>
                <input type="text" onChange={(e:React.ChangeEvent<HTMLInputElement>)=>setcode(e.target.value)}  className="mx-auto border-4 p-[10px]  m-[10px]" placeholder="" />
+                <div className=" text-center">Enter allocated quiz duration</div>
+                <select name="" id="" onChange={(e:React.ChangeEvent<HTMLSelectElement>)=>settime(e.target.value)} className="m-[10px] border-4 p-[10px] mx-auto">
+                  <option value="2hrs">2 hrs</option>
+                  <option value="1/2hrs">1/2hrs</option>
+                  <option value="1hrs">1hrs</option>
+                  <option value="30min">30min</option>
+                  <option value="25min">25min</option>
+                  <option value="15min">15min</option>
+                  <option value="5min" selected >5min</option>
+                </select>
                </div>
 
                <div>
