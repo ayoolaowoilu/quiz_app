@@ -88,8 +88,8 @@ export default function Join(){
    
      const timer =()=>{
       if (room?._time === "5min"){
-        setmin(1)
-        setsec(2)
+        setmin(4)
+        setsec(59)
      }else if(room?._time === "15min"){
        setmin(14)
        setsec(59)
