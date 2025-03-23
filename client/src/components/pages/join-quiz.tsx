@@ -2,7 +2,7 @@ import axios from "axios"
 import logo from "../../assets/carrot-diet-fruit-svgrepo-com.svg"
 import loader from "../../assets/Rolling@1x-1.0s-200px-200px.gif"
 import { dataContext } from "../provider"
-import { FormEvent, useState,useContext } from "react"
+import { FormEvent, useState,useContext,useEffect } from "react"
 export default function Join(){
   const data = useContext(dataContext)
   document.title = "Join quiz"
@@ -64,8 +64,8 @@ export default function Join(){
       localStorage.removeItem("token")
       window.location.reload()
     }
-    const [min,setmin] = useState<number>(0)
-    const [sec,setsec] = useState<number>(0)
+    const [min,setmin] = useState<number>(4)
+    const [sec,setsec] = useState<number>(59)
     const submitquiz = async()=>{
         setresults(true)
         setloading(true)
@@ -78,49 +78,62 @@ export default function Join(){
          time:room?._time
         }
         const resp = await axios.post(`${import.meta.env.VITE_URL}/quiz/subscores`,payload)
-        console.log(resp)
+        console.log(resp.data)
         setloading(false)
         
       } catch (err) {
         console.log(err)
       }
     }
+   
      const timer =()=>{
       if (room?._time === "5min"){
-        setmin(5)
-        setsec(0)
+        setmin(1)
+        setsec(2)
      }else if(room?._time === "15min"){
-       setmin(15)
-       setsec(0)
+       setmin(14)
+       setsec(59)
      }else if(room?._time === "25min"){
-       setmin(25)
-       setsec(0)
+       setmin(24)
+       setsec(59)
      }else if(room?._time === "30min"){
-      setmin(30)
-      setsec(0) 
+      setmin(29)
+      setsec(59) 
      }else if(room?._time === "1hr"){
-       setmin(60)
-       setsec(0)
+       setmin(59)
+       setsec(59)
      }else if(room?._time === "1/2hr"){
-       setmin(90)
-       setsec(0)
+       setmin(89)
+       setsec(59)
      }else if(room?._time === "2hr"){
-       setmin(120)
-       setsec(0)
+       setmin(119)
+       setsec(59)
      }
-     if (sec == 0){
-      setmin((mu:any)=>Number(mu) - 1)
-      setsec(59)
-     }else{
-      setInterval(() => {
-        setsec((se:any)=>Number(se)-1)
-      }, 1000);
+   
      
      }
-     if (min == 0 && sec == 0){
-      submitquiz()
-     }
-     }
+    
+   
+   
+     useEffect(() => {
+      if (min === 0 && sec === 0) {
+        submitquiz()
+        return; 
+      }
+  
+      const interval = setInterval(() => {
+        if (sec > 0) {
+          setsec(prevSeconds => prevSeconds - 1);
+        } else if (min > 0 && sec === 0) {
+          setmin(prevMinutes => prevMinutes - 1);
+          setsec(59);
+        }
+      }, 1000);
+  
+      return () => clearInterval(interval); 
+    }, [sec, min]);
+  
+    
     return(
         <>
  <header className="bg-white">
@@ -378,6 +391,9 @@ export default function Join(){
   </div>
  </div> : <div className="p-[10px]">
       <div className={min < 5 ? "font-bold m-[10px] text-red-700 bg-white border-4 p-[10px] fixed top-[60px] shadow-xl" : "font-bold m-[10px] text-green-700 bg-white border-4 p-[10px] fixed top-[60px] shadow-xl" }>Timer : {min < 10 ? `0${min}` : `${min}`} : {sec < 10 ? `0${sec}` : `${sec}`} </div>
+      <br />
+      <br />
+      <br />
     {questions?.map((que,index)=>{
       
       return(
