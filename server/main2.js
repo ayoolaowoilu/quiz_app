@@ -21,7 +21,7 @@ quiz.post("/question",async(req,res)=>{
         if(resp[0].count > 0) {
             res.send({msg:"## A room with this code already exists"})
         }else{
-            await db.query("INSERT INTO quiz(_code,_user,questions,_time) VALUES(?,?,?)",[code,user,JSON.stringify(questions),time])
+            await db.query("INSERT INTO quiz(_code,_user,questions,_time) VALUES(?,?,?,?)",[code,user,JSON.stringify(questions),time])
             res.send({msg:"Questions Added"})
         }
     } catch (err) {
