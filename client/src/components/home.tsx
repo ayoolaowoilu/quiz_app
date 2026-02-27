@@ -2,410 +2,378 @@ import world from "../assets/world-1-svgrepo-com.svg"
 import create from "../assets/plus-svgrepo-com.svg"
 import join from "../assets/link-svgrepo-com.svg"
 import logo from "../assets/carrot-diet-fruit-svgrepo-com.svg"
-import { useState } from "react"
-export default function Home(){
-    const cards = [
-    {
-        title:"Join a quiz",
-        info:"You are required to use a token sent by the quiz settor to join the quiz room and after you are finished your result would be sent directly to your email ,so have fun 😊😊 ",
-        path:"/join-quiz"    ,
-        imgid:1   
-    },
-    {
-        title:"Create a quiz-code",
-        info:"This mode is for only setors,Good news is that you can apply to be one!",
-        path:"/create-quiz",
-        imgid:2
-    },
-    {
-        title:"Expore random quizis from yours truely🎉 (Comming soon!)",
-        info:"This mode quizis are available to any one on this app , it contains random quisis about the world ,current affairs , science and lots more...",
-        path:"#",
-        imgid:3
-    }
+import { useState, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
 
-    ]
-    document.title = "Hyper quiz"
-    const [toggle,settoggle] = useState<Boolean>(false)
-    const logout =()=>{
-      localStorage.removeItem("token")
-      window.location.reload()
+export default function Home() {
+  const navigate = useNavigate()
+  
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('theme');
+      return savedTheme === 'dark' || 
+        (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
     }
-    return(
-  <>
- <header className="bg-white">
-  <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
-    <div className="flex h-16 items-center justify-between">
-      <div className="flex-1 md:flex md:items-center md:gap-12">
-        <a className="block text-teal-600">
-          <span className="sr-only">Home</span>
-           Hyper Quizes
-        </a>
+    return false;
+  })
+  
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  useEffect(() => {
+    // Check if logged in
+    const token = localStorage.getItem("token")
+    if (!token) {
+      navigate("/login")
+    }
+  }, [navigate])
+
+  const toggleTheme = () => {
+    const newTheme = !isDark
+    setIsDark(newTheme)
+    if (newTheme) {
+      document.documentElement.classList.add('dark')
+      localStorage.setItem('theme', 'dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+      localStorage.setItem('theme', 'light')
+    }
+  }
+
+  const logout = () => {
+    localStorage.removeItem("token")
+    window.location.href = "/login"
+  }
+
+  const cards = [
+    {
+      title: "Join a Quiz",
+      info: "Use a token sent by the quiz creator to join the quiz room. Your results will be sent directly to your email. Have fun! 🎉",
+      path: "/join-quiz",
+      img: join,
+      color: "from-orange-500 to-amber-500",
+      bgColor: "bg-orange-50 dark:bg-orange-900/20"
+    },
+    {
+      title: "Create Quiz Code",
+      info: "For quiz setters only. Apply to become one and start creating engaging quizzes for others!",
+      path: "/create-quiz",
+      img: create,
+      color: "from-amber-500 to-yellow-500",
+      bgColor: "bg-amber-50 dark:bg-amber-900/20"
+    },
+    {
+      title: "Explore Random Quizzes",
+      info: "Coming soon! Access public quizzes about world affairs, science, history, and more. Available to everyone!",
+      path: "#",
+      img: world,
+      color: "from-yellow-500 to-orange-500",
+      bgColor: "bg-yellow-50 dark:bg-yellow-900/20",
+      comingSoon: true
+    }
+  ]
+
+  document.title = "Home | Hyper Quizes"
+
+  return (
+    <div className={`min-h-screen transition-colors duration-500 ${isDark ? 'bg-stone-950' : 'bg-orange-50/30'}`}>
+      {/* Background Effects */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className={`absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full blur-3xl transition-colors duration-700 ${isDark ? 'bg-orange-600/10' : 'bg-orange-300/20'}`}></div>
+        <div className={`absolute -bottom-40 -left-20 w-[500px] h-[500px] rounded-full blur-3xl transition-colors duration-700 ${isDark ? 'bg-amber-600/10' : 'bg-amber-300/20'}`}></div>
       </div>
 
-      <div className="md:flex md:items-center md:gap-12">
-        <nav aria-label="Global" className="hidden md:block">
-          <ul className="flex items-center gap-6 text-sm">
-            <li>
-              <a className="text-gray-500 transition hover:text-gray-500/75 border-b-4" href="/home"> Home </a>
-            </li>
-
-            <li>
-              <a className="text-gray-500 transition hover:text-gray-500/75" href="/join-quiz">Join quiz</a>
-            </li>
-
-            <li>
-              <a className="text-gray-500 transition hover:text-gray-500/75" href="/create-quiz"> Create quiz code </a>
-            </li>
-            <li>
-              <a className="text-gray-500 transition hover:text-gray-500/75" href="/stats"> Stats </a>
-            </li>
-            <li>
-              <a className="text-gray-500 transition hover:text-gray-500/75" onClick={logout} href="#">Logout</a>
-            </li>
-
-           
-          </ul>
-        </nav>
-
-        <div className="hidden md:relative md:block">
-          <button
-            type="button"
-        
-            className="overflow-hidden rounded-full border border-gray-300 shadow-inner"
-          >
-            <span className="sr-only">Toggle dashboard menu</span>
-
-            <img
-              src={logo}
-              alt=""
-              className="size-10 object-cover"
-            />
-          </button>
-
-          
-        </div>
-        
-        <div onClick={()=>{
-            if(toggle){
-                settoggle(false)
-            }else{
-                settoggle(true)
-            }
-            
-            }} className="block md:hidden">
-          <button
-            className="rounded-sm bg-gray-100 p-2 text-gray-600 transition hover:text-gray-600/75"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="size-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-            <div
-            className={toggle ? "absolute end-0 z-10 mt-0.5 w-56 divide-y divide-gray-100 rounded-md border border-gray-100 bg-white shadow-lg" :"hidden"}
-            role="menu"
-          >
-            <div className="p-2">
-              <a
-                href="#"
-                className="block rounded-lg px-4 py-2 text-sm text-gray-500 hover:bg-gray-50 hover:text-gray-700"
-                role="menuitem"
-              >
-                Home
-              </a>
-
-              <a
-                href="/join-quiz"
-                className="block rounded-lg px-4 py-2 text-sm text-gray-500 hover:bg-gray-50 hover:text-gray-700"
-                role="menuitem"
-              >
-               Join quiz
-              </a>
-
-              <a
-                href="/create-quiz"
-                className="block rounded-lg px-4 py-2 text-sm text-gray-500 hover:bg-gray-50 hover:text-gray-700"
-                role="menuitem"
-              >
-               Create quiz
-              </a>
+      {/* Header */}
+      <header className={`relative z-50 sticky top-0 backdrop-blur-md border-b transition-colors duration-500 ${isDark ? 'bg-stone-900/80 border-stone-800' : 'bg-white/80 border-stone-200'}`}>
+        <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between">
+            {/* Logo */}
+            <div className="flex items-center gap-3">
+              <div className={`p-2 rounded-xl transition-all duration-300 ${isDark ? 'bg-orange-500/20' : 'bg-orange-100'}`}>
+                <img src={logo} alt="Hyper Quizes" className="w-8 h-8" />
+              </div>
+              <span className={`text-xl font-bold transition-colors duration-300 ${isDark ? 'text-stone-100' : 'text-stone-800'}`}>
+                Hyper<span className="text-orange-500">Quizes</span>
+              </span>
             </div>
 
-            <div className="p-2">
-              <form method="POST" action="#">
-                <button
-                  type="submit"
-                  onClick={logout}
-                  className="flex w-full items-center gap-2 rounded-lg px-4 py-2 text-sm text-red-700 hover:bg-red-50"
-                  role="menuitem"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth="1.5"
-                    stroke="currentColor"
-                    className="size-4"
+            {/* Desktop Navigation */}
+            <div className="hidden lg:flex items-center gap-8">
+              <nav className="flex items-center gap-6">
+                {[
+                  { name: 'Home', href: '/home', active: true },
+                  { name: 'Join Quiz', href: '/join-quiz' },
+                  { name: 'Create Quiz', href: '/create-quiz' },
+                  { name: 'Stats', href: '/stats' }
+                ].map((item) => (
+                  <a
+                    key={item.name}
+                    href={item.href}
+                    className={`text-sm font-medium transition-colors duration-300 relative ${item.active ? 'text-orange-500' : isDark ? 'text-stone-400 hover:text-stone-200' : 'text-stone-600 hover:text-stone-900'}`}
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"
-                    />
-                  </svg>
+                    {item.name}
+                    {item.active && (
+                      <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-orange-500 rounded-full"></span>
+                    )}
+                  </a>
+                ))}
+              </nav>
 
+              <div className="flex items-center gap-3">
+                {/* Get App Button */}
+                <button
+                  className={`hidden md:flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 hover:scale-105 ${isDark ? 'bg-orange-500 text-stone-950 hover:bg-orange-400 shadow-[0_0_20px_rgba(249,115,22,0.3)]' : 'bg-stone-900 text-white hover:bg-stone-800 shadow-lg'}`}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                  </svg>
+                  Get App
+                </button>
+
+                {/* Theme Toggle */}
+                <button
+                  onClick={toggleTheme}
+                  className={`p-2 rounded-lg transition-all duration-300 hover:scale-110 ${isDark ? 'bg-stone-800 text-amber-400 hover:bg-stone-700' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'}`}
+                >
+                  {isDark ? (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                    </svg>
+                  )}
+                </button>
+
+                {/* Logout Button */}
+                <button
+                  onClick={logout}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${isDark ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20' : 'bg-red-50 text-red-600 hover:bg-red-100'}`}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                  </svg>
+                  <span className="hidden xl:inline">Logout</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Mobile Menu Button */}
+            <div className="flex lg:hidden items-center gap-3">
+              {/* Mobile Get App Button */}
+              <button
+                className={`p-2 rounded-lg transition-all duration-300 ${isDark ? 'bg-orange-500 text-stone-950' : 'bg-stone-900 text-white'}`}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                </svg>
+              </button>
+
+              <button
+                onClick={toggleTheme}
+                className={`p-2 rounded-lg transition-colors duration-300 ${isDark ? 'bg-stone-800 text-amber-400' : 'bg-stone-100 text-stone-600'}`}
+              >
+                {isDark ? (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                  </svg>
+                )}
+              </button>
+              
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className={`p-2 rounded-lg transition-colors duration-300 ${isDark ? 'bg-stone-800 text-stone-200' : 'bg-stone-100 text-stone-600'}`}
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  {mobileMenuOpen ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                  )}
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile Menu */}
+          {mobileMenuOpen && (
+            <div className={`lg:hidden py-4 border-t transition-colors duration-300 ${isDark ? 'border-stone-800' : 'border-stone-200'}`}>
+              <nav className="flex flex-col gap-2">
+                {[
+                  { name: 'Home', href: '/home' },
+                  { name: 'Join Quiz', href: '/join-quiz' },
+                  { name: 'Create Quiz', href: '/create-quiz' },
+                  { name: 'Stats', href: '/stats' }
+                ].map((item) => (
+                  <a
+                    key={item.name}
+                    href={item.href}
+                    className={`px-4 py-3 rounded-lg text-sm font-medium transition-colors duration-300 ${isDark ? 'text-stone-300 hover:bg-stone-800' : 'text-stone-700 hover:bg-stone-100'}`}
+                  >
+                    {item.name}
+                  </a>
+                ))}
+                
+                {/* Mobile Get App Button Full */}
+                <button
+                  className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold mt-2 ${isDark ? 'bg-orange-500 text-stone-950' : 'bg-stone-900 text-white'}`}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                  </svg>
+                  Download App
+                </button>
+
+                <button
+                  onClick={logout}
+                  className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium text-left transition-colors duration-300 mt-2 ${isDark ? 'text-red-400 hover:bg-red-500/10' : 'text-red-600 hover:bg-red-50'}`}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                  </svg>
                   Logout
                 </button>
-              </form>
+              </nav>
+            </div>
+          )}
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="relative z-10 container mx-auto px-4 py-12 lg:py-20">
+        {/* Welcome Section */}
+        <div className="text-center mb-16">
+          <h1 className={`text-4xl lg:text-6xl font-black mb-4 transition-colors duration-300 ${isDark ? 'text-stone-100' : 'text-stone-900'}`}>
+            What would you like to <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-500">do today?</span>
+          </h1>
+          <p className={`text-lg max-w-2xl mx-auto transition-colors duration-300 ${isDark ? 'text-stone-400' : 'text-stone-600'}`}>
+            Choose from the options below to start your quiz journey. Join existing quizzes, create your own, or explore public quizzes.
+          </p>
+        </div>
+
+        {/* Cards Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {cards.map((card, index) => (
+            <a
+              key={index}
+              href={card.path}
+              className={`group relative block rounded-3xl overflow-hidden transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl ${isDark ? 'bg-stone-900/80 border border-stone-800' : 'bg-white border border-stone-100'} ${card.comingSoon ? 'opacity-75' : ''}`}
+            >
+              {/* Gradient Top Border */}
+              <div className={`absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r ${card.color}`}></div>
+              
+              {/* Coming Soon Badge */}
+              {card.comingSoon && (
+                <div className="absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold bg-amber-500 text-white shadow-lg">
+                  Coming Soon
+                </div>
+              )}
+
+              <div className="p-8 h-full flex flex-col">
+                {/* Icon */}
+                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-transform duration-300 group-hover:scale-110 ${card.bgColor}`}>
+                  <img src={card.img} alt={card.title} className="w-8 h-8" />
+                </div>
+
+                {/* Content */}
+                <h3 className={`text-2xl font-bold mb-3 transition-colors duration-300 ${isDark ? 'text-stone-100' : 'text-stone-900'}`}>
+                  {card.title}
+                </h3>
+                
+                <p className={`flex-1 leading-relaxed transition-colors duration-300 ${isDark ? 'text-stone-400' : 'text-stone-600'}`}>
+                  {card.info}
+                </p>
+
+                {/* Action */}
+                <div className="mt-6 flex items-center gap-2 font-semibold text-orange-500 group-hover:text-orange-400 transition-colors duration-300">
+                  <span>{card.comingSoon ? 'Notify Me' : 'Get Started'}</span>
+                  <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                  </svg>
+                </div>
+              </div>
+
+              {/* Hover Effect Overlay */}
+              <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none ${isDark ? 'bg-gradient-to-br from-orange-500/5 to-transparent' : 'bg-gradient-to-br from-orange-50 to-transparent'}`}></div>
+            </a>
+          ))}
+        </div>
+
+        {/* Quick Stats */}
+        <div className={`mt-16 max-w-4xl mx-auto rounded-2xl p-8 backdrop-blur-sm border transition-colors duration-500 ${isDark ? 'bg-stone-900/50 border-stone-800' : 'bg-white/50 border-stone-200'}`}>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            {[
+              { value: '10K+', label: 'Active Quizzes' },
+              { value: '50K+', label: 'Users' },
+              { value: '100K+', label: 'Questions' },
+              { value: '99%', label: 'Satisfaction' }
+            ].map((stat, idx) => (
+              <div key={idx}>
+                <div className={`text-3xl font-bold mb-1 transition-colors duration-300 ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>{stat.value}</div>
+                <div className={`text-sm transition-colors duration-300 ${isDark ? 'text-stone-500' : 'text-stone-600'}`}>{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className={`relative z-10 border-t transition-colors duration-500 ${isDark ? 'bg-stone-900/80 border-stone-800' : 'bg-white/80 border-stone-200'}`}>
+        <div className="mx-auto max-w-screen-xl px-4 py-12 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            {/* Logo & Copyright */}
+            <div className="flex items-center gap-3">
+              <div className={`p-2 rounded-xl ${isDark ? 'bg-orange-500/20' : 'bg-orange-100'}`}>
+                <img src={logo} alt="Hyper Quizes" className="w-8 h-8" />
+              </div>
+              <div>
+                <span className={`font-bold transition-colors duration-300 ${isDark ? 'text-stone-100' : 'text-stone-900'}`}>
+                  Hyper<span className="text-orange-500">Quizes</span>
+                </span>
+                <p className={`text-xs transition-colors duration-300 ${isDark ? 'text-stone-500' : 'text-stone-500'}`}>
+                  © 2024 All rights reserved.
+                </p>
+              </div>
+            </div>
+
+            {/* Links */}
+            <div className="flex flex-wrap justify-center gap-6 text-sm">
+              {['About', 'Privacy', 'Terms', 'Contact'].map((link) => (
+                <a
+                  key={link}
+                  href={`/${link.toLowerCase()}`}
+                  className={`transition-colors duration-300 ${isDark ? 'text-stone-400 hover:text-stone-200' : 'text-stone-600 hover:text-stone-900'}`}
+                >
+                  {link}
+                </a>
+              ))}
+            </div>
+
+            {/* Social Links */}
+            <div className="flex items-center gap-4">
+              {[
+                { name: 'Twitter', icon: 'M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84' },
+                { name: 'GitHub', icon: 'M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z' }
+              ].map((social) => (
+                <a
+                  key={social.name}
+                  href="#"
+                  className={`p-2 rounded-lg transition-all duration-300 hover:scale-110 ${isDark ? 'text-stone-400 hover:text-orange-400 hover:bg-stone-800' : 'text-stone-600 hover:text-orange-500 hover:bg-orange-50'}`}
+                >
+                  <span className="sr-only">{social.name}</span>
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d={social.icon} />
+                  </svg>
+                </a>
+              ))}
             </div>
           </div>
-          </button>
         </div>
-      </div>
+      </footer>
     </div>
-  </div>
-</header>
-        <div className="flex flex-col sm:flex-row  justify-center">
-   
-   {cards?.map((card,index)=>{
-      return(
-          <a href={card.path} key={index} className="group relative block h-64 sm:h-80 lg:h-96">
-          <span className="absolute inset-0 border-2 border-dashed border-black"></span>
-        
-          <div
-            className="relative flex h-full transform items-end border-2 border-black bg-white transition-transform group-hover:-translate-x-2 group-hover:-translate-y-2"
-          >
-            <div
-              className="p-4 !pt-0 transition-opacity group-hover:absolute group-hover:opacity-0 sm:p-6 lg:p-8"
-            >
-              {card.imgid == 1 ? <img src={join} width={"40px"} height={"40px"} /> : card.imgid == 2 ? <img src={create} width={"40px"} height={"40px"} /> : <img src={world} width={"40px"} height={"40px"} />  }
-        
-              <h2 className="mt-4 text-xl font-medium sm:text-2xl">{card.title}</h2>
-            </div>
-        
-            <div
-              className="absolute p-4 opacity-0 transition-opacity group-hover:relative group-hover:opacity-100 sm:p-6 lg:p-8"
-            >
-              <h3 className="mt-4 text-xl font-medium sm:text-2xl">{card.title}</h3>
-        
-              <p className="mt-4 text-sm sm:text-base">
-              {card.info}
-              </p>
-        
-              <p className="mt-8 font-bold">Read more</p>
-            </div>
-          </div>
-        </a>
-      )
-   })}
-        </div>
-<footer className="bg-white">
-  <div className="mx-auto max-w-screen-xl space-y-8 px-4 py-16 sm:px-6 lg:space-y-16 lg:px-8">
-    <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-      <div>
-        <div className="text-teal-600">
-          <img src={logo}  width={"70px"} height={"70px"} alt="" />
-        </div>
-
-        <p className="mt-4 max-w-xs text-gray-500">
-         Hyper quizis 
-        </p>
-
-        <ul className="mt-8 flex gap-6">
-          <li>
-            <a
-              href="#"
-              rel="noreferrer"
-              target="_blank"
-              className="text-gray-700 transition hover:opacity-75"
-            >
-              <span className="sr-only">Facebook</span>
-
-              <svg className="size-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  fillRule="evenodd"
-                  d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </a>
-          </li>
-
-          <li>
-            <a
-              href="#"
-              rel="noreferrer"
-              target="_blank"
-              className="text-gray-700 transition hover:opacity-75"
-            >
-              <span className="sr-only">Instagram</span>
-
-              <svg className="size-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  fillRule="evenodd"
-                  d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </a>
-          </li>
-
-          <li>
-            <a
-              href="#"
-              rel="noreferrer"
-              target="_blank"
-              className="text-gray-700 transition hover:opacity-75"
-            >
-              <span className="sr-only">Twitter</span>
-
-              <svg className="size-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"
-                />
-              </svg>
-            </a>
-          </li>
-
-          <li>
-            <a
-              href="#"
-              rel="noreferrer"
-              target="_blank"
-              className="text-gray-700 transition hover:opacity-75"
-            >
-              <span className="sr-only">GitHub</span>
-
-              <svg className="size-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  fillRule="evenodd"
-                  d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </a>
-          </li>
-
-          <li>
-            <a
-              href="#"
-              rel="noreferrer"
-              target="_blank"
-              className="text-gray-700 transition hover:opacity-75"
-            >
-              <span className="sr-only">Dribbble</span>
-
-              <svg className="size-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  fillRule="evenodd"
-                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c5.51 0 10-4.48 10-10S17.51 2 12 2zm6.605 4.61a8.502 8.502 0 011.93 5.314c-.281-.054-3.101-.629-5.943-.271-.065-.141-.12-.293-.184-.445a25.416 25.416 0 00-.564-1.236c3.145-1.28 4.577-3.124 4.761-3.362zM12 3.475c2.17 0 4.154.813 5.662 2.148-.152.216-1.443 1.941-4.48 3.08-1.399-2.57-2.95-4.675-3.189-5A8.687 8.687 0 0112 3.475zm-3.633.803a53.896 53.896 0 013.167 4.935c-3.992 1.063-7.517 1.04-7.896 1.04a8.581 8.581 0 014.729-5.975zM3.453 12.01v-.26c.37.01 4.512.065 8.775-1.215.25.477.477.965.694 1.453-.109.033-.228.065-.336.098-4.404 1.42-6.747 5.303-6.942 5.629a8.522 8.522 0 01-2.19-5.705zM12 20.547a8.482 8.482 0 01-5.239-1.8c.152-.315 1.888-3.656 6.703-5.337.022-.01.033-.01.054-.022a35.318 35.318 0 011.823 6.475 8.4 8.4 0 01-3.341.684zm4.761-1.465c-.086-.52-.542-3.015-1.659-6.084 2.679-.423 5.022.271 5.314.369a8.468 8.468 0 01-3.655 5.715z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </a>
-          </li>
-        </ul>
-      </div>
-
-      <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:col-span-2 lg:grid-cols-4">
-        <div>
-          <p className="font-medium text-gray-900">Services</p>
-
-          <ul className="mt-6 space-y-4 text-sm">
-            <li>
-              <a href="#" className="text-gray-700 transition hover:opacity-75"> 1on1 Coaching </a>
-            </li>
-
-            <li>
-              <a href="#" className="text-gray-700 transition hover:opacity-75"> Company Review </a>
-            </li>
-
-            <li>
-              <a href="#" className="text-gray-700 transition hover:opacity-75"> Accounts Review </a>
-            </li>
-
-            <li>
-              <a href="#" className="text-gray-700 transition hover:opacity-75"> HR Consulting </a>
-            </li>
-
-            <li>
-              <a href="#" className="text-gray-700 transition hover:opacity-75"> SEO Optimisation </a>
-            </li>
-          </ul>
-        </div>
-
-        <div>
-          <p className="font-medium text-gray-900">Company</p>
-
-          <ul className="mt-6 space-y-4 text-sm">
-            <li>
-              <a href="#" className="text-gray-700 transition hover:opacity-75"> About </a>
-            </li>
-
-            <li>
-              <a href="#" className="text-gray-700 transition hover:opacity-75"> Meet the Team </a>
-            </li>
-
-            <li>
-              <a href="#" className="text-gray-700 transition hover:opacity-75"> Accounts Review </a>
-            </li>
-          </ul>
-        </div>
-
-        <div>
-          <p className="font-medium text-gray-900">Helpful Links</p>
-
-          <ul className="mt-6 space-y-4 text-sm">
-            <li>
-              <a href="#" className="text-gray-700 transition hover:opacity-75"> Contact </a>
-            </li>
-
-            <li>
-              <a href="#" className="text-gray-700 transition hover:opacity-75"> FAQs </a>
-            </li>
-
-            <li>
-              <a href="#" className="text-gray-700 transition hover:opacity-75"> Live Chat </a>
-            </li>
-          </ul>
-        </div>
-
-        <div>
-          <p className="font-medium text-gray-900">Legal</p>
-
-          <ul className="mt-6 space-y-4 text-sm">
-            <li>
-              <a href="#" className="text-gray-700 transition hover:opacity-75"> Accessibility </a>
-            </li>
-
-            <li>
-              <a href="#" className="text-gray-700 transition hover:opacity-75"> Returns Policy </a>
-            </li>
-
-            <li>
-              <a href="#" className="text-gray-700 transition hover:opacity-75"> Refund Policy </a>
-            </li>
-
-            <li>
-              <a href="#" className="text-gray-700 transition hover:opacity-75">
-                Hiring-3 Statistics
-              </a>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <p className="text-xs text-gray-500">&copy; 2022. Company Name. All rights reserved.</p>
-  </div>
-</footer> 
-        
-  </>
-    )
+  )
 }

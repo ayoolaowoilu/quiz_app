@@ -1,154 +1,343 @@
 import loder from "../assets/Rolling@1x-1.0s-200px-200px.gif"
 import axios from "axios"
-import { FormEvent, useState } from "react"
-import { useNavigate } from "react-router-dom"
-export default function Login(){
-  const [loading , setloading]= useState<Boolean>(false)
-  const [msg,setmsg] = useState<String>("")
-  const navigate = useNavigate()
-    const [not,setnot] = useState<Boolean>(false)
-    const [profile,setprofile] = useState({
-      email:"",
-      password:""
-    })
-    const handlechange =(e:React.ChangeEvent<HTMLInputElement>)=>{
-        setprofile({...profile,[e.target.name]:e.target.value})
+import { FormEvent, useState, useEffect } from "react"
+import { useNavigate, useSearchParams } from "react-router-dom"
+
+export default function Login() {
+  const [loading, setLoading] = useState(false)
+  const [msg, setMsg] = useState("")
+  const [not, setNot] = useState(false)
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('theme');
+      return savedTheme === 'dark' || 
+        (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
     }
-    console.log(import.meta.env.VITE_URL)
-    const handlesubmit =async(e:FormEvent)=>{
-      e.preventDefault()
-      setloading(true)
-      setnot(false)
-      setmsg("")
-      try {
-        const resp = await axios.post(`${import.meta.env.VITE_URL}/auth/login`,profile)
-        setloading(false)
-        setnot(true)
-        setmsg(resp.data.msg)
-        if(resp.data.token){
-          localStorage.setItem("token",resp.data.token)
-          setloading(true)
-          setTimeout(() => {
-              navigate("/home")
-          }, 3000);
-        }
-      } catch (err) {
-       
-        setloading(false)
-        setnot(true)
-        setmsg("## " + err)
+    return false;
+  })
+  const [isRedirecting, setIsRedirecting] = useState(false)
+  
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  
+  const isAppAuth = searchParams.get('appauth') === 'true'
+  
+  const [profile, setProfile] = useState({
+    email: "",
+    password: ""
+  })
+
+  useEffect(() => {
+    const token = localStorage.getItem("token")
+    
+    if (token) {
+      if (isAppAuth) {
+        setIsRedirecting(true)
+        setTimeout(() => {
+          window.location.href = "hyperquizes://auth/callback?token=" + token
+        }, 2000)
+      } else {
+        navigate("/home")
       }
     }
-    document.title ="Login page"
-   return(
-    <div>
+  }, [navigate, isAppAuth])
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setProfile({ ...profile, [e.target.name]: e.target.value })
+  }
+
+  const toggleTheme = () => {
+    const newTheme = !isDark
+    setIsDark(newTheme)
+    if (newTheme) {
+      document.documentElement.classList.add('dark')
+      localStorage.setItem('theme', 'dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+      localStorage.setItem('theme', 'light')
+    }
+  }
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setNot(false)
+    setMsg("")
+    
+    try {
+      const resp = await axios.post(`${import.meta.env.VITE_URL}/auth/login`, profile)
+      setLoading(false)
+      setNot(true)
+      setMsg(resp.data.msg)
+      
+      if (resp.data.token) {
+        localStorage.setItem("token", resp.data.token)
+        setLoading(true)
         
-        {not ?  <div role="alert" className={ msg?.includes("##") ? "mx-auto rounded-sm border-s-4 border-red-500 bg-red-50 p-4" : " mx-auto rounded-sm border-s-4 border-green-500 bg-green-50 p-4"}>
-  <strong className={msg?.includes("##") ? "block font-medium text-red-800" : "block font-medium text-green-800" }> {msg?.includes("##") ? "Something went wrong" : "Sucessfull"} </strong>
+        setTimeout(() => {
+          if (isAppAuth) {
+            window.location.href = `hyperquizes://auth/callback?token=${resp.data.token}`
+          } else {
+            navigate("/home")
+          }
+        }, 1500)
+      }
+    } catch (err: any) {
+      setLoading(false)
+      setNot(true)
+      setMsg("## " + (err.response?.data?.msg || err.message || "Login failed"))
+    }
+  }
 
-<p className={ msg?.includes("##") ? "mt-2 text-sm text-red-700" : "mt-2 text-sm text-green-700" }>
-    {msg}
-  </p>
-</div> : null}
-<div className="mx-auto max-w-screen-xl px-4 py-16 sm:px-6 lg:px-8">
-  <div className="mx-auto max-w-lg text-center">
-    <h1 className="text-2xl font-bold sm:text-3xl">Login page</h1>
+  document.title = "Login | Hyper Quizes"
 
-    <p className="mt-4 text-gray-500">
-     Welcome to hyper quizes A place you can learn
-    </p>
-  </div>
-
-  <form action="#" onSubmit={handlesubmit} className="mx-auto mt-8 mb-0 max-w-md space-y-4">
-    <div>
-      <label htmlFor="email" className="sr-only">Email</label>
-
-      <div className="relative">
-        <input
-          type="email"
-          name="email"
-          onChange={handlechange}
-          className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-xs"
-          placeholder="Enter email"
-        />
-
-        <span className="absolute inset-y-0 end-0 grid place-content-center px-4">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="size-4 text-gray-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"
+  if (isRedirecting) {
+    return (
+      <div className={`min-h-screen flex items-center justify-center transition-colors duration-500 ${isDark ? 'bg-stone-950' : 'bg-orange-50'}`}>
+        <div className="text-center space-y-6 p-8">
+          <div className="relative w-24 h-24 mx-auto">
+            <div className={`absolute inset-0 rounded-full blur-xl animate-pulse ${isDark ? 'bg-orange-500/30' : 'bg-orange-400/40'}`}></div>
+            <img 
+              src="/src/assets/carrot-diet-fruit-svgrepo-com.svg" 
+              alt="Logo" 
+              className="relative w-24 h-24 animate-bounce"
             />
-          </svg>
-        </span>
+          </div>
+          <div className={`text-2xl font-bold ${isDark ? 'text-stone-100' : 'text-stone-800'}`}>
+            Opening App...
+          </div>
+          <div className={`flex items-center justify-center gap-2 ${isDark ? 'text-stone-400' : 'text-stone-600'}`}>
+            <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce"></div>
+            <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce delay-100"></div>
+            <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce delay-200"></div>
+          </div>
+          <p className={`text-sm ${isDark ? 'text-stone-500' : 'text-stone-500'}`}>
+            Redirecting you to the Hyper Quizes app
+          </p>
+        </div>
       </div>
-    </div>
+    )
+  }
 
-    <div>
-      <label htmlFor="password" className="sr-only">Password</label>
-
-      <div className="relative">
-        <input
-          type="password"
-          name="password"
-          onChange={handlechange}
-          className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-xs"
-          placeholder="Enter password"
-        />
-
-        <span className="absolute inset-y-0 end-0 grid place-content-center px-4">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="size-4 text-gray-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-            />
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-            />
-          </svg>
-        </span>
+  return (
+    <div className={`min-h-screen transition-colors duration-500 ${isDark ? 'bg-stone-950' : 'bg-orange-50'}`}>
+      {/* Background Shapes */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className={`absolute -top-40 -right-40 w-[500px] h-[500px] rounded-full blur-3xl transition-colors duration-700 ${isDark ? 'bg-orange-600/10' : 'bg-orange-300/30'}`}></div>
+        <div className={`absolute -bottom-40 -left-20 w-[400px] h-[400px] rounded-full blur-3xl transition-colors duration-700 ${isDark ? 'bg-amber-600/10' : 'bg-amber-300/30'}`}></div>
       </div>
-    </div>
 
-    <div className="flex items-center justify-between">
-      <p className="text-sm text-gray-500">
-        No account?
-        <a className="underline" href="/reg">Sign up</a>
-      </p>
+      {/* Theme Toggle */}
+      <button
+        onClick={toggleTheme}
+        className={`fixed top-6 right-6 z-50 p-3 rounded-full transition-all duration-300 hover:scale-110 ${isDark ? 'bg-stone-800 text-amber-400 hover:bg-stone-700' : 'bg-white text-stone-600 shadow-lg hover:shadow-xl'}`}
+      >
+        {isDark ? (
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+          </svg>
+        ) : (
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+          </svg>
+        )}
+      </button>
 
-     {!loading ?  <button
-        type="submit"
-        className="inline-block rounded-lg bg-blue-500 px-5 py-3 text-sm font-medium text-white"
-      >
-        Sign in
-      </button> :  <button
-        type="submit"
-        className=" flex inline-block rounded-lg bg-blue-500 opacity-50 px-5 py-3 text-sm font-medium text-white"
-      >
-       <span className="my-auto">Sign in</span>
-        <img src={loder} width={"30px"} height={"30px"} alt="" />
-      </button> }
+      {/* Notification */}
+      {not && (
+        <div className={`fixed top-6 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md px-4 animate-slide-down`}>
+          <div className={`rounded-2xl border-l-4 p-4 shadow-2xl backdrop-blur-md ${msg?.includes("##") ? 'bg-red-500/10 border-red-500' : 'bg-green-500/10 border-green-500'}`}>
+            <div className="flex items-start gap-3">
+              <div className={`mt-0.5 ${msg?.includes("##") ? 'text-red-500' : 'text-green-500'}`}>
+                {msg?.includes("##") ? (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                )}
+              </div>
+              <div className="flex-1">
+                <strong className={`block font-semibold ${msg?.includes("##") ? 'text-red-400' : 'text-green-400'}`}>
+                  {msg?.includes("##") ? "Authentication Failed" : "Welcome Back!"}
+                </strong>
+                <p className={`mt-1 text-sm ${msg?.includes("##") ? 'text-red-300' : 'text-green-300'}`}>
+                  {msg?.replace("## ", "")}
+                </p>
+              </div>
+              <button onClick={() => setNot(false)} className="text-stone-400 hover:text-stone-200">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Main Content */}
+      <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-12">
+        <div className="w-full max-w-md">
+          {/* Logo & Header */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-20 h-20 mb-4 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 shadow-2xl shadow-orange-500/25">
+              <img 
+                src="/src/assets/carrot-diet-fruit-svgrepo-com.svg" 
+                alt="Logo" 
+                className="w-12 h-12 drop-shadow-sm"
+              />
+            </div>
+            <h1 className={`text-3xl font-bold mb-2 transition-colors duration-300 ${isDark ? 'text-stone-100' : 'text-stone-800'}`}>
+              Welcome Back
+            </h1>
+            <p className={`transition-colors duration-300 ${isDark ? 'text-stone-400' : 'text-stone-600'}`}>
+              Sign in to continue your learning journey
+            </p>
+            {isAppAuth && (
+              <div className={`mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${isDark ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' : 'bg-orange-100 text-orange-700 border border-orange-200'}`}>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                </svg>
+                App Authentication
+              </div>
+            )}
+          </div>
+
+          {/* Form Card */}
+          <div className={`relative rounded-3xl p-8 shadow-2xl transition-all duration-500 ${isDark ? 'bg-stone-900/80 border border-stone-800' : 'bg-white border border-stone-100'}`}>
+            {/* Decorative top line */}
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 rounded-t-3xl"></div>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Email Field */}
+              <div>
+                <label className={`block text-sm font-medium mb-2 transition-colors duration-300 ${isDark ? 'text-stone-300' : 'text-stone-700'}`}>
+                  Email Address
+                </label>
+                <div className="relative group">
+                  <input
+                    type="email"
+                    name="email"
+                    value={profile.email}
+                    onChange={handleChange}
+                    className={`w-full rounded-xl px-4 py-3.5 pl-12 transition-all duration-300 outline-none focus:ring-2 ${isDark ? 'bg-stone-800/50 border-stone-700 text-stone-100 placeholder-stone-500 focus:ring-orange-500/50 focus:border-orange-500' : 'bg-stone-50 border-stone-200 text-stone-900 placeholder-stone-400 focus:ring-orange-500/20 focus:border-orange-500'} border`}
+                    placeholder="you@example.com"
+                    required
+                  />
+                  <div className={`absolute left-4 top-1/2 transform -translate-y-1/2 transition-colors duration-300 ${isDark ? 'text-stone-500 group-focus-within:text-orange-400' : 'text-stone-400 group-focus-within:text-orange-500'}`}>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"></path>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              {/* Password Field */}
+              <div>
+                <label className={`block text-sm font-medium mb-2 transition-colors duration-300 ${isDark ? 'text-stone-300' : 'text-stone-700'}`}>
+                  Password
+                </label>
+                <div className="relative group">
+                  <input
+                    type="password"
+                    name="password"
+                    value={profile.password}
+                    onChange={handleChange}
+                    className={`w-full rounded-xl px-4 py-3.5 pl-12 transition-all duration-300 outline-none focus:ring-2 ${isDark ? 'bg-stone-800/50 border-stone-700 text-stone-100 placeholder-stone-500 focus:ring-orange-500/50 focus:border-orange-500' : 'bg-stone-50 border-stone-200 text-stone-900 placeholder-stone-400 focus:ring-orange-500/20 focus:border-orange-500'} border`}
+                    placeholder="••••••••"
+                    required
+                  />
+                  <div className={`absolute left-4 top-1/2 transform -translate-y-1/2 transition-colors duration-300 ${isDark ? 'text-stone-500 group-focus-within:text-orange-400' : 'text-stone-400 group-focus-within:text-orange-500'}`}>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              {/* Options Row */}
+              <div className="flex items-center justify-between text-sm">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    className={`w-4 h-4 rounded border transition-colors duration-300 ${isDark ? 'border-stone-600 bg-stone-800 text-orange-500' : 'border-stone-300 text-orange-500'}`} 
+                  />
+                  <span className={`transition-colors duration-300 ${isDark ? 'text-stone-400' : 'text-stone-600'}`}>Remember me</span>
+                </label>
+                <a href="/forgot-password" className="text-orange-500 hover:text-orange-400 font-medium transition-colors">
+                  Forgot password?
+                </a>
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className={`w-full relative overflow-hidden rounded-xl py-4 px-4 font-bold text-white transition-all duration-300 ${loading ? 'cursor-not-allowed opacity-80' : 'hover:shadow-xl hover:shadow-orange-500/25 hover:-translate-y-0.5'}`}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 animate-gradient-shift"></div>
+                {loading ? (
+                  <div className="relative flex items-center justify-center gap-3">
+                    <span className="text-lg">Please wait</span>
+                    <img src={loder} width="24" height="24" alt="Loading" className="invert" />
+                  </div>
+                ) : (
+                  <span className="relative flex items-center justify-center gap-2 text-lg">
+                    Sign In
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                    </svg>
+                  </span>
+                )}
+              </button>
+            </form>
+
+            {/* Sign Up Link */}
+            <div className={`mt-8 pt-6 text-center border-t transition-colors duration-300 ${isDark ? 'border-stone-800' : 'border-stone-100'}`}>
+              <p className={`text-sm transition-colors duration-300 ${isDark ? 'text-stone-400' : 'text-stone-600'}`}>
+                Don't have an account?{' '}
+                <a href="/reg" className="font-semibold text-orange-500 hover:text-orange-400 transition-colors">
+                  Create one now
+                </a>
+              </p>
+            </div>
+          </div>
+
+          {/* Back to Home */}
+          <div className="text-center mt-6">
+            <a 
+              href="/" 
+              className={`inline-flex items-center gap-2 text-sm transition-colors duration-300 ${isDark ? 'text-stone-500 hover:text-stone-300' : 'text-stone-500 hover:text-stone-700'}`}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+              </svg>
+              Back to home
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* Styles */}
+      <style>{`
+        @keyframes gradient-shift {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+        .animate-gradient-shift {
+          background-size: 200% 200%;
+          animation: gradient-shift 3s ease infinite;
+        }
+        @keyframes slide-down {
+          from { transform: translate(-50%, -100%); opacity: 0; }
+          to { transform: translate(-50%, 0); opacity: 1; }
+        }
+        .animate-slide-down {
+          animation: slide-down 0.3s ease-out;
+        }
+      `}</style>
     </div>
-  </form>
-</div>
-    </div>
-   )
+  )
 }
