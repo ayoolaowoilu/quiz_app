@@ -37,7 +37,7 @@ export default function Gen() {
           <div className="flex items-center gap-2 sm:gap-3">
             <div className={`p-1.5 sm:p-2 rounded-xl transition-all duration-300 ${isDark ? 'bg-orange-500/20' : 'bg-white shadow-lg'}`}>
               <img 
-                src="/src/assets/carrot-diet-fruit-svgrepo-com.svg" 
+                src="/src/assets/carrot-diet-fruit-svgrepo-com.png" 
                 alt="Hyper Quizes" 
                 className="w-8 h-8 sm:w-10 sm:h-10 drop-shadow-sm"
               />
@@ -259,7 +259,7 @@ export default function Gen() {
               <div className="relative">
                 <div className={`absolute inset-0 rounded-full blur-2xl animate-pulse ${isDark ? 'bg-orange-500/20' : 'bg-orange-400/30'}`}></div>
                 <img 
-                  src="/src/assets/carrot-diet-fruit-svgrepo-com.svg" 
+                  src="/src/assets/carrot-diet-fruit-svgrepo-com.png" 
                   alt="Hyper Quizes" 
                   className={`relative w-32 h-32 sm:w-40 sm:h-40 animate-float ${isDark ? 'drop-shadow-[0_0_30px_rgba(249,115,22,0.3)]' : 'drop-shadow-2xl'}`}
                 />
