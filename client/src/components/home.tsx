@@ -1,7 +1,7 @@
 import world from "../assets/world-1-svgrepo-com.svg"
 import create from "../assets/plus-svgrepo-com.svg"
 import join from "../assets/link-svgrepo-com.svg"
-import logo from "../assets/carrot-diet-fruit-svgrepo-com.png"
+import logo from "../assets/carrot-diet-fruit-svgrepo-com.svg"
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 

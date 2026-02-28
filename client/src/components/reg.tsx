@@ -151,7 +151,7 @@ export default function Reg() {
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-20 h-20 mb-4 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 shadow-2xl shadow-orange-500/25">
               <img 
-                src="/src/assets/carrot-diet-fruit-svgrepo-com.png" 
+                src="/src/assets/carrot-diet-fruit-svgrepo-com.svg" 
                 alt="Logo" 
                 className="w-12 h-12 drop-shadow-sm"
               />

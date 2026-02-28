@@ -37,7 +37,7 @@ export default function Gen() {
           <div className="flex items-center gap-2 sm:gap-3">
             <div className={`p-1.5 sm:p-2 rounded-xl transition-all duration-300 ${isDark ? 'bg-orange-500/20' : 'bg-white shadow-lg'}`}>
               <img 
-                src="/src/assets/carrot-diet-fruit-svgrepo-com.png" 
+                src="/src/assets/carrot-diet-fruit-svgrepo-com.svg" 
                 alt="Hyper Quizes" 
                 className="w-8 h-8 sm:w-10 sm:h-10 drop-shadow-sm"
               />
@@ -113,7 +113,7 @@ export default function Gen() {
               <div className="flex flex-wrap justify-center lg:justify-start gap-2 sm:gap-3">
                 {['Business', 'Education', 'Trivia', 'Research'].map((tag, i) => (
                   <span 
-                    key={tag} 
+                    key={i} 
                     className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-300 hover:scale-105 cursor-default ${isDark ? 'bg-stone-800 text-stone-300 hover:bg-stone-700' : 'bg-white text-stone-700 shadow-sm hover:shadow-md'}`}
                   >
                     {tag}
