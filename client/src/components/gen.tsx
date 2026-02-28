@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import logo from "../assets/carrot-diet-fruit-svgrepo-com.svg"
 
 export default function Gen() {
   const [isDark, setIsDark] = useState(() => {
@@ -37,7 +38,7 @@ export default function Gen() {
           <div className="flex items-center gap-2 sm:gap-3">
             <div className={`p-1.5 sm:p-2 rounded-xl transition-all duration-300 ${isDark ? 'bg-orange-500/20' : 'bg-white shadow-lg'}`}>
               <img 
-                src="/src/assets/carrot-diet-fruit-svgrepo-com.svg" 
+                src={logo} 
                 alt="Hyper Quizes" 
                 className="w-8 h-8 sm:w-10 sm:h-10 drop-shadow-sm"
               />

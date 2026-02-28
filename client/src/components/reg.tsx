@@ -1,4 +1,5 @@
 import loder from "../assets/Rolling@1x-1.0s-200px-200px.gif"
+import logo from "../assets/carrot-diet-fruit-svgrepo-com.svg"
 import { FormEvent, useState, useEffect } from "react"
 import axios from "axios"
 import { useNavigate } from "react-router-dom"
@@ -151,7 +152,7 @@ export default function Reg() {
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-20 h-20 mb-4 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 shadow-2xl shadow-orange-500/25">
               <img 
-                src="/src/assets/carrot-diet-fruit-svgrepo-com.svg" 
+                src="{logo}" 
                 alt="Logo" 
                 className="w-12 h-12 drop-shadow-sm"
               />

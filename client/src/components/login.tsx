@@ -1,5 +1,6 @@
 import loder from "../assets/Rolling@1x-1.0s-200px-200px.gif"
 import axios from "axios"
+import logo from "../assets/carrot-diet-fruit-svgrepo-com.svg"
 import { FormEvent, useState, useEffect } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 
@@ -98,7 +99,7 @@ export default function Login() {
           <div className="relative w-24 h-24 mx-auto">
             <div className={`absolute inset-0 rounded-full blur-xl animate-pulse ${isDark ? 'bg-orange-500/30' : 'bg-orange-400/40'}`}></div>
             <img 
-              src="/src/assets/carrot-diet-fruit-svgrepo-com.svg" 
+              src={logo}
               alt="Logo" 
               className="relative w-24 h-24 animate-bounce"
             />
@@ -184,7 +185,7 @@ export default function Login() {
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-20 h-20 mb-4 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 shadow-2xl shadow-orange-500/25">
               <img 
-                src="/src/assets/carrot-diet-fruit-svgrepo-com.svg" 
+                src={logo} 
                 alt="Logo" 
                 className="w-12 h-12 drop-shadow-sm"
               />
