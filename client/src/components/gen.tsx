@@ -260,7 +260,7 @@ export default function Gen() {
               <div className="relative">
                 <div className={`absolute inset-0 rounded-full blur-2xl animate-pulse ${isDark ? 'bg-orange-500/20' : 'bg-orange-400/30'}`}></div>
                 <img 
-                  src="/src/assets/carrot-diet-fruit-svgrepo-com.png" 
+                  src={logo}
                   alt="Hyper Quizes" 
                   className={`relative w-32 h-32 sm:w-40 sm:h-40 animate-float ${isDark ? 'drop-shadow-[0_0_30px_rgba(249,115,22,0.3)]' : 'drop-shadow-2xl'}`}
                 />
