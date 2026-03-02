@@ -109,12 +109,9 @@ const loginAuth = async (credentials: UserDetails): Promise<AuthResponse> => {
     if (token) {
       localStorage.setItem("token", token);
       // Fetch user data after storing token
-      try {
-        await getUserData();
-      } catch (err) {
-        console.warn('Failed to fetch user data after login:', err);
-        // Don't fail login if profile fetch fails
-      }
+    
+      getUserData();
+      
     } else {
       throw new Error('No token received from server');
     }
@@ -150,7 +147,9 @@ const registerAuth = async (credentials: UserDetails): Promise<AuthResponse> => 
     // FIXED: Check data.data.token instead of data.token
     const token = data.data?.token || data.token;
     if (token) {
+
       localStorage.setItem("token", token);
+      getUserData()
     }
     
     return data;
