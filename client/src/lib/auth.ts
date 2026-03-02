@@ -1,6 +1,6 @@
 
 
-// types/auth.ts
+
 type UserDetails = {
   email: string;
   password: string;
@@ -17,7 +17,7 @@ type AuthResponse = {
   error?: string;
 };
 
-// lib/auth.ts
+
 const API_URL = import.meta.env.VITE_URL || "http://localhost:1234";
 
 
@@ -33,7 +33,7 @@ const fetchWithError = async (url: string, options: RequestInit) => {
     const response = await fetch(url, {
       ...options,
       headers: {
-        ...getAuthHeaders(token || undefined), // Use stored token if available
+        ...getAuthHeaders(token || undefined),
         ...options.headers,
       },
     });
@@ -52,7 +52,7 @@ const fetchWithError = async (url: string, options: RequestInit) => {
   }
 };
 
-// Get user profile
+
 const getUserData = async (token:any) => {
  
   
@@ -69,7 +69,7 @@ const getUserData = async (token:any) => {
     console.log(data)
     
 
-    if (!data.success && data.error) {
+    if (data.error) {
       throw new Error(data.msg || 'Failed to fetch user data');
     }
    
