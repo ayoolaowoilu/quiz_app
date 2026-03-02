@@ -53,8 +53,8 @@ const fetchWithError = async (url: string, options: RequestInit) => {
 };
 
 // Get user profile
-const getUserData = async () => {
-  const token = localStorage.getItem("token");
+const getUserData = async (token:any) => {
+ 
   
   if (!token) {
     throw new Error('No authentication token found');
@@ -110,7 +110,7 @@ const loginAuth = async (credentials: UserDetails): Promise<AuthResponse> => {
       localStorage.setItem("token", token);
       // Fetch user data after storing token
     
-      getUserData();
+    await  getUserData(token);
       
     } else {
       throw new Error('No token received from server');
@@ -149,7 +149,7 @@ const registerAuth = async (credentials: UserDetails): Promise<AuthResponse> => 
     if (token) {
 
       localStorage.setItem("token", token);
-      getUserData()
+      await getUserData(token)
     }
     
     return data;
