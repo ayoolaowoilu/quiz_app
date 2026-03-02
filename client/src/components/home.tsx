@@ -2,7 +2,7 @@ import world from "../assets/world-1-svgrepo-com.svg"
 import create from "../assets/plus-svgrepo-com.svg"
 import join from "../assets/link-svgrepo-com.svg"
 import logo from "../assets/carrot-diet-fruit-svgrepo-com.svg"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 
 export default function Home() {
@@ -18,6 +18,19 @@ export default function Home() {
   })
   
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [profileOpen, setProfileOpen] = useState(false)
+  const [appDropdownOpen, setAppDropdownOpen] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+  const profileRef = useRef<HTMLDivElement>(null)
+  const appDropdownRef = useRef<HTMLDivElement>(null)
+
+  // Get user data from localStorage
+  const username = localStorage.getItem("username")
+  const email = localStorage.getItem("email")
+  const userId = localStorage.getItem("id")
+  const displayName = username ? `@${username}` : `User${userId}`
+  const avatarLetter = (username || `User${userId}`).charAt(0).toUpperCase()
 
   useEffect(() => {
     // Check if logged in
@@ -25,7 +38,43 @@ export default function Home() {
     if (!token) {
       navigate("/login")
     }
+
+    // Detect mobile device
+    const checkMobile = () => {
+      const userAgent = navigator.userAgent || navigator.vendor
+      const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
+      setIsMobile(mobileRegex.test(userAgent) || window.innerWidth < 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+
+    // Detect scroll for nav styling
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20)
+    }
+    
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile)
+      window.removeEventListener('scroll', handleScroll)
+    }
   }, [navigate])
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+        setProfileOpen(false)
+      }
+      if (appDropdownRef.current && !appDropdownRef.current.contains(event.target as Node)) {
+        setAppDropdownOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
 
   const toggleTheme = () => {
     const newTheme = !isDark
@@ -41,58 +90,116 @@ export default function Home() {
 
   const logout = () => {
     localStorage.removeItem("token")
+    localStorage.removeItem("username")
+    localStorage.removeItem("email")
+    localStorage.removeItem("id")
     window.location.href = "/login"
+  }
+
+  const handleGetApp = () => {
+    if (isMobile) {
+      // Direct download for mobile - Android APK
+      window.location.href = "/download/hyperquizzes.apk"
+    } else {
+      // Toggle dropdown for PC
+      setAppDropdownOpen(!appDropdownOpen)
+    }
   }
 
   const cards = [
     {
       title: "Join a Quiz",
       info: "Use a token sent by the quiz creator to join the quiz room. Your results will be sent directly to your email. Have fun! 🎉",
-      path: "/join-quiz",
+      path: "#",
       img: join,
-      color: "from-orange-500 to-amber-500",
-      bgColor: "bg-orange-50 dark:bg-orange-900/20"
+      color: "from-orange-600 via-orange-500 to-amber-500",
+      bgColor: "bg-orange-500/10",
+      comingSoon: true
     },
     {
       title: "Create Quiz Code",
       info: "For quiz setters only. Apply to become one and start creating engaging quizzes for others!",
       path: "/create-quiz",
       img: create,
-      color: "from-amber-500 to-yellow-500",
-      bgColor: "bg-amber-50 dark:bg-amber-900/20"
+      color: "from-amber-500 via-yellow-500 to-orange-500",
+      bgColor: "bg-amber-500/10"
     },
     {
       title: "Explore Random Quizzes",
       info: "Coming soon! Access public quizzes about world affairs, science, history, and more. Available to everyone!",
-      path: "#",
+      path: "/explore",
       img: world,
-      color: "from-yellow-500 to-orange-500",
-      bgColor: "bg-yellow-50 dark:bg-yellow-900/20",
-      comingSoon: true
+      color: "from-yellow-500 via-orange-500 to-amber-500",
+      bgColor: "bg-yellow-500/10"
     }
   ]
+
+  // QR Code SVG Component
+  const QRCodeSVG = () => (
+    <svg viewBox="0 0 200 200" className="w-full h-full">
+      {/* Background */}
+      <rect width="200" height="200" fill="white"/>
+      
+      {/* QR Code Pattern - Simplified representation */}
+      <g fill="black">
+        {/* Position Detection Patterns */}
+        <rect x="10" y="10" width="50" height="50" fill="black"/>
+        <rect x="20" y="20" width="30" height="30" fill="white"/>
+        <rect x="25" y="25" width="20" height="20" fill="black"/>
+        
+        <rect x="140" y="10" width="50" height="50" fill="black"/>
+        <rect x="150" y="20" width="30" height="30" fill="white"/>
+        <rect x="155" y="25" width="20" height="20" fill="black"/>
+        
+        <rect x="10" y="140" width="50" height="50" fill="black"/>
+        <rect x="20" y="150" width="30" height="30" fill="white"/>
+        <rect x="25" y="155" width="20" height="20" fill="black"/>
+        
+        {/* Data Modules - Random pattern for visual */}
+        {Array.from({ length: 20 }).map((_, i) => (
+          Array.from({ length: 20 }).map((_, j) => {
+            if (Math.random() > 0.5 && 
+                !((i < 3 && j < 3) || (i > 16 && j < 3) || (i < 3 && j > 16))) {
+              return <rect key={`${i}-${j}`} x={10 + i * 9} y={10 + j * 9} width="7" height="7" fill="black"/>
+            }
+            return null
+          })
+        ))}
+      </g>
+      
+      {/* Center Logo */}
+      <circle cx="100" cy="100" r="15" fill="white"/>
+      <circle cx="100" cy="100" r="10" fill="#f97316"/>
+    </svg>
+  )
 
   document.title = "Home | Hyper Quizes"
 
   return (
-    <div className={`min-h-screen transition-colors duration-500 ${isDark ? 'bg-stone-950' : 'bg-orange-50/30'}`}>
-      {/* Background Effects */}
+    <div className={`min-h-screen relative overflow-hidden transition-colors duration-500 ${isDark ? 'bg-black' : 'bg-gradient-to-br from-orange-50 via-white to-amber-50'}`}>
+      {/* Animated Background Effects */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className={`absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full blur-3xl transition-colors duration-700 ${isDark ? 'bg-orange-600/10' : 'bg-orange-300/20'}`}></div>
-        <div className={`absolute -bottom-40 -left-20 w-[500px] h-[500px] rounded-full blur-3xl transition-colors duration-700 ${isDark ? 'bg-amber-600/10' : 'bg-amber-300/20'}`}></div>
+        <div className={`absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full blur-[120px] animate-pulse transition-colors duration-700 ${isDark ? 'bg-orange-600/20' : 'bg-orange-300/30'}`}></div>
+        <div className={`absolute -bottom-40 -left-20 w-[500px] h-[500px] rounded-full blur-[100px] animate-pulse delay-1000 transition-colors duration-700 ${isDark ? 'bg-orange-500/10' : 'bg-amber-300/30'}`}></div>
+        <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full blur-[150px] ${isDark ? 'bg-orange-600/5' : 'bg-orange-200/20'}`}></div>
+        
+        {/* Grid pattern for dark mode */}
+        {isDark && (
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(249,115,22,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(249,115,22,0.03)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
+        )}
       </div>
 
-      {/* Header */}
-      <header className={`relative z-50 sticky top-0 backdrop-blur-md border-b transition-colors duration-500 ${isDark ? 'bg-stone-900/80 border-stone-800' : 'bg-white/80 border-stone-200'}`}>
+      {/* Fixed Navigation - Always Visible */}
+      <header className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 border-b ${scrolled ? (isDark ? 'bg-black/95 shadow-2xl shadow-orange-500/10 border-orange-500/30' : 'bg-white/95 shadow-lg shadow-orange-500/10 border-orange-200') : (isDark ? 'bg-black/80 border-orange-500/20' : 'bg-white/80 border-orange-100')} backdrop-blur-xl`}>
         <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
             <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-xl transition-all duration-300 ${isDark ? 'bg-orange-500/20' : 'bg-orange-100'}`}>
+              <div className={`p-2 rounded-xl transition-all duration-300 group-hover:scale-110 border ${isDark ? 'bg-gradient-to-br from-orange-500/20 to-orange-600/10 border-orange-500/30' : 'bg-orange-100 border-orange-200'}`}>
                 <img src={logo} alt="Hyper Quizes" className="w-8 h-8" />
               </div>
-              <span className={`text-xl font-bold transition-colors duration-300 ${isDark ? 'text-stone-100' : 'text-stone-800'}`}>
-                Hyper<span className="text-orange-500">Quizes</span>
+              <span className={`text-xl font-bold transition-colors duration-300 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                Hyper<span className="text-orange-500">Quizzes</span>
               </span>
             </div>
 
@@ -108,31 +215,76 @@ export default function Home() {
                   <a
                     key={item.name}
                     href={item.href}
-                    className={`text-sm font-medium transition-colors duration-300 relative ${item.active ? 'text-orange-500' : isDark ? 'text-stone-400 hover:text-stone-200' : 'text-stone-600 hover:text-stone-900'}`}
+                    className={`text-sm font-medium transition-colors duration-300 relative py-2 ${item.active ? 'text-orange-500' : isDark ? 'text-gray-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
                   >
                     {item.name}
                     {item.active && (
-                      <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-orange-500 rounded-full"></span>
+                      <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full"></span>
                     )}
                   </a>
                 ))}
               </nav>
 
               <div className="flex items-center gap-3">
-                {/* Get App Button */}
-                <button
-                  className={`hidden md:flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 hover:scale-105 ${isDark ? 'bg-orange-500 text-stone-950 hover:bg-orange-400 shadow-[0_0_20px_rgba(249,115,22,0.3)]' : 'bg-stone-900 text-white hover:bg-stone-800 shadow-lg'}`}
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                  </svg>
-                  Get App
-                </button>
+                {/* Get App Button with Dropdown */}
+                <div className="relative" ref={appDropdownRef}>
+                  <button
+                    onClick={handleGetApp}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 hover:scale-105 ${isDark ? 'bg-gradient-to-r from-orange-600 to-orange-500 text-white hover:shadow-[0_0_20px_rgba(249,115,22,0.4)]' : 'bg-slate-900 text-white hover:bg-slate-800 shadow-lg'}`}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                    Get App
+                    {!isMobile && (
+                      <svg className={`w-3 h-3 transition-transform duration-300 ${appDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                      </svg>
+                    )}
+                  </button>
+
+                  {/* PC Download Dropdown */}
+                  {!isMobile && appDropdownOpen && (
+                    <div className={`absolute right-0 mt-3 w-72 rounded-2xl shadow-2xl border transition-all duration-300 transform origin-top-right animate-fade-in ${isDark ? 'bg-black/95 border-orange-500/20 backdrop-blur-xl' : 'bg-white border-orange-100'}`}>
+                      <div className="p-6">
+                        <div className="text-center mb-4">
+                          <h3 className={`font-bold text-lg mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>Download HyperQuizzes</h3>
+                          <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>Available for Android</p>
+                        </div>
+                        
+                        {/* QR Code */}
+                        <div className={`w-48 h-48 mx-auto rounded-xl overflow-hidden border-2 p-2 ${isDark ? 'border-orange-500/30 bg-white' : 'border-orange-200 bg-white'}`}>
+                          <QRCodeSVG />
+                        </div>
+
+                        <div className={`mt-4 p-3 rounded-xl text-center text-sm ${isDark ? 'bg-orange-500/10 text-orange-400' : 'bg-orange-50 text-orange-700'}`}>
+                          <p>Scan QR code with your Android device</p>
+                        </div>
+
+                        <div className={`mt-4 pt-4 border-t ${isDark ? 'border-orange-500/20' : 'border-orange-100'}`}>
+                          <a 
+                            href="/download/hyperquizzes.apk" 
+                            download
+                            className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${isDark ? 'bg-gradient-to-r from-orange-600 to-orange-500 text-white hover:shadow-[0_0_20px_rgba(249,115,22,0.4)]' : 'bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:shadow-lg'}`}
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                            </svg>
+                            Download APK
+                          </a>
+                          <p className={`text-xs text-center mt-3 ${isDark ? 'text-gray-500' : 'text-slate-500'}`}>
+                            Version 1.0.0 • 15 MB
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 {/* Theme Toggle */}
                 <button
                   onClick={toggleTheme}
-                  className={`p-2 rounded-lg transition-all duration-300 hover:scale-110 ${isDark ? 'bg-stone-800 text-amber-400 hover:bg-stone-700' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'}`}
+                  className={`p-2.5 rounded-xl transition-all duration-300 hover:scale-110 border ${isDark ? 'bg-gray-900 text-orange-400 border-orange-500/30 hover:border-orange-500/50' : 'bg-slate-100 text-slate-600 border-slate-200 hover:border-orange-300'}`}
                 >
                   {isDark ? (
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -145,33 +297,94 @@ export default function Home() {
                   )}
                 </button>
 
-                {/* Logout Button */}
-                <button
-                  onClick={logout}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${isDark ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20' : 'bg-red-50 text-red-600 hover:bg-red-100'}`}
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                  </svg>
-                  <span className="hidden xl:inline">Logout</span>
-                </button>
+                {/* Profile Dropdown */}
+                <div className="relative" ref={profileRef}>
+                  <button
+                    onClick={() => setProfileOpen(!profileOpen)}
+                    className={`flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full transition-all duration-300 border ${isDark ? 'bg-gray-900/80 border-orange-500/30 hover:border-orange-500/60' : 'bg-white border-slate-200 hover:border-orange-300'} ${profileOpen ? (isDark ? 'border-orange-500' : 'border-orange-400') : ''}`}
+                  >
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-orange-500/30">
+                      {avatarLetter}
+                    </div>
+                    <svg className={`w-4 h-4 transition-transform duration-300 ${isDark ? 'text-gray-400' : 'text-slate-500'} ${profileOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  <div className={`absolute right-0 mt-2 w-72 rounded-2xl shadow-2xl border transition-all duration-300 transform origin-top-right ${profileOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'} ${isDark ? 'bg-black/95 border-orange-500/20 backdrop-blur-xl' : 'bg-white border-orange-100'}`}>
+                    {/* User Info Header */}
+                    <div className={`p-4 border-b ${isDark ? 'border-orange-500/20' : 'border-orange-100'}`}>
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-orange-500/30">
+                          {avatarLetter}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className={`font-bold truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                            {displayName}
+                          </p>
+                          <p className={`text-sm truncate ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>
+                            {email || 'No email'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Menu Items */}
+                    <div className="p-2">
+                      <a href="/profile" className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors duration-200 ${isDark ? 'text-gray-300 hover:bg-orange-500/10 hover:text-orange-400' : 'text-slate-700 hover:bg-orange-50 hover:text-orange-600'}`}>
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                        Profile Settings
+                      </a>
+                      <a href="/stats" className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors duration-200 ${isDark ? 'text-gray-300 hover:bg-orange-500/10 hover:text-orange-400' : 'text-slate-700 hover:bg-orange-50 hover:text-orange-600'}`}>
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        My Stats
+                      </a>
+                      <div className={`my-2 border-t ${isDark ? 'border-orange-500/20' : 'border-orange-100'}`}></div>
+                      <button
+                        onClick={logout}
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors duration-200 ${isDark ? 'text-red-400 hover:bg-red-500/10' : 'text-red-600 hover:bg-red-50'}`}
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                        </svg>
+                        Sign Out
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Mobile Menu Button */}
-            <div className="flex lg:hidden items-center gap-3">
+            <div className="flex lg:hidden items-center gap-2">
               {/* Mobile Get App Button */}
               <button
-                className={`p-2 rounded-lg transition-all duration-300 ${isDark ? 'bg-orange-500 text-stone-950' : 'bg-stone-900 text-white'}`}
+                onClick={handleGetApp}
+                className={`p-2 rounded-lg transition-all duration-300 border ${isDark ? 'bg-gradient-to-r from-orange-600 to-orange-500 text-white border-orange-500/30' : 'bg-slate-900 text-white border-slate-200'}`}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                 </svg>
               </button>
 
+              {/* Mobile Profile Button */}
+              <button
+                onClick={() => setProfileOpen(!profileOpen)}
+                className={`p-2 rounded-lg transition-all duration-300 border ${isDark ? 'bg-gray-900 border-orange-500/30' : 'bg-white border-slate-200'}`}
+              >
+                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white font-bold text-xs">
+                  {avatarLetter}
+                </div>
+              </button>
+
               <button
                 onClick={toggleTheme}
-                className={`p-2 rounded-lg transition-colors duration-300 ${isDark ? 'bg-stone-800 text-amber-400' : 'bg-stone-100 text-stone-600'}`}
+                className={`p-2 rounded-lg transition-colors duration-300 border ${isDark ? 'bg-gray-900 text-orange-400 border-orange-500/30' : 'bg-slate-100 text-slate-600 border-slate-200'}`}
               >
                 {isDark ? (
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -186,7 +399,7 @@ export default function Home() {
               
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className={`p-2 rounded-lg transition-colors duration-300 ${isDark ? 'bg-stone-800 text-stone-200' : 'bg-stone-100 text-stone-600'}`}
+                className={`p-2 rounded-lg transition-colors duration-300 border ${isDark ? 'bg-gray-900 text-white border-orange-500/30' : 'bg-slate-100 text-slate-600 border-slate-200'}`}
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   {mobileMenuOpen ? (
@@ -201,56 +414,81 @@ export default function Home() {
 
           {/* Mobile Menu */}
           {mobileMenuOpen && (
-            <div className={`lg:hidden py-4 border-t transition-colors duration-300 ${isDark ? 'border-stone-800' : 'border-stone-200'}`}>
+            <div className={`lg:hidden py-4 border-t transition-colors duration-300 ${isDark ? 'border-orange-500/20' : 'border-orange-100'}`}>
               <nav className="flex flex-col gap-2">
                 {[
-                  { name: 'Home', href: '/home' },
-                  { name: 'Join Quiz', href: '/join-quiz' },
+                  { name: 'Home', href: '/home', active: true },
+                  { name: 'Explore', href: '/explore' },
                   { name: 'Create Quiz', href: '/create-quiz' },
                   { name: 'Stats', href: '/stats' }
                 ].map((item) => (
                   <a
                     key={item.name}
                     href={item.href}
-                    className={`px-4 py-3 rounded-lg text-sm font-medium transition-colors duration-300 ${isDark ? 'text-stone-300 hover:bg-stone-800' : 'text-stone-700 hover:bg-stone-100'}`}
+                    className={`px-4 py-3 rounded-xl text-sm font-medium transition-colors duration-300 ${item.active ? (isDark ? 'bg-orange-500/20 text-orange-400' : 'bg-orange-100 text-orange-600') : (isDark ? 'text-gray-300 hover:bg-gray-900' : 'text-slate-700 hover:bg-slate-100')}`}
                   >
                     {item.name}
                   </a>
                 ))}
                 
-                {/* Mobile Get App Button Full */}
-                <button
-                  className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold mt-2 ${isDark ? 'bg-orange-500 text-stone-950' : 'bg-stone-900 text-white'}`}
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                  </svg>
-                  Download App
-                </button>
+                {/* Mobile App Download Section */}
+                <div className={`mt-4 p-4 rounded-2xl border ${isDark ? 'bg-gradient-to-br from-orange-500/10 to-orange-600/5 border-orange-500/20' : 'bg-orange-50 border-orange-200'}`}>
+                  <p className={`text-sm font-semibold mb-3 text-center ${isDark ? 'text-white' : 'text-slate-900'}`}>Download for Android</p>
+                  <a 
+                    href="/download/hyperquizzes.apk" 
+                    download
+                    className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${isDark ? 'bg-gradient-to-r from-orange-600 to-orange-500 text-white' : 'bg-gradient-to-r from-orange-500 to-amber-500 text-white'}`}
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                    Download APK
+                  </a>
+                  <p className={`text-xs text-center mt-2 ${isDark ? 'text-gray-500' : 'text-slate-500'}`}>
+                    Version 1.0.0 • 15 MB • Android Only
+                  </p>
+                </div>
 
-                <button
-                  onClick={logout}
-                  className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium text-left transition-colors duration-300 mt-2 ${isDark ? 'text-red-400 hover:bg-red-500/10' : 'text-red-600 hover:bg-red-50'}`}
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                  </svg>
-                  Logout
-                </button>
+                {/* Mobile User Info */}
+                <div className={`mt-4 p-4 rounded-2xl border ${isDark ? 'bg-gray-900/50 border-orange-500/20' : 'bg-slate-50 border-slate-200'}`}>
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white font-bold shadow-lg shadow-orange-500/30">
+                      {avatarLetter}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`font-bold truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>{displayName}</p>
+                      <p className={`text-xs truncate ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>{email || 'No email'}</p>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <a href="/profile" className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isDark ? 'text-gray-300 hover:bg-orange-500/10' : 'text-slate-700 hover:bg-orange-50'}`}>
+                      Profile Settings
+                    </a>
+                    <button
+                      onClick={logout}
+                      className={`px-3 py-2 rounded-lg text-sm font-medium text-left transition-colors ${isDark ? 'text-red-400 hover:bg-red-500/10' : 'text-red-600 hover:bg-red-50'}`}
+                    >
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
               </nav>
             </div>
           )}
         </div>
       </header>
 
+      {/* Spacer for fixed header */}
+      <div className="h-16"></div>
+
       {/* Main Content */}
       <main className="relative z-10 container mx-auto px-4 py-12 lg:py-20">
         {/* Welcome Section */}
         <div className="text-center mb-16">
-          <h1 className={`text-4xl lg:text-6xl font-black mb-4 transition-colors duration-300 ${isDark ? 'text-stone-100' : 'text-stone-900'}`}>
-            What would you like to <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-500">do today?</span>
+          <h1 className={`text-4xl lg:text-6xl font-black mb-4 transition-colors duration-300 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+            What would you like to <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600">do today?</span>
           </h1>
-          <p className={`text-lg max-w-2xl mx-auto transition-colors duration-300 ${isDark ? 'text-stone-400' : 'text-stone-600'}`}>
+          <p className={`text-lg max-w-2xl mx-auto transition-colors duration-300 ${isDark ? 'text-gray-400' : 'text-slate-600'}`}>
             Choose from the options below to start your quiz journey. Join existing quizzes, create your own, or explore public quizzes.
           </p>
         </div>
@@ -261,30 +499,30 @@ export default function Home() {
             <a
               key={index}
               href={card.path}
-              className={`group relative block rounded-3xl overflow-hidden transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl ${isDark ? 'bg-stone-900/80 border border-stone-800' : 'bg-white border border-stone-100'} ${card.comingSoon ? 'opacity-75' : ''}`}
+              className={`group relative block rounded-3xl overflow-hidden transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl ${isDark ? 'bg-black/60 border border-orange-500/20 hover:border-orange-500/40' : 'bg-white border border-orange-100'} ${card.comingSoon ? 'opacity-75' : ''}`}
             >
               {/* Gradient Top Border */}
               <div className={`absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r ${card.color}`}></div>
               
               {/* Coming Soon Badge */}
               {card.comingSoon && (
-                <div className="absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold bg-amber-500 text-white shadow-lg">
+                <div className="absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg">
                   Coming Soon
                 </div>
               )}
 
               <div className="p-8 h-full flex flex-col">
                 {/* Icon */}
-                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-transform duration-300 group-hover:scale-110 ${card.bgColor}`}>
+                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-transform duration-300 group-hover:scale-110 ${card.bgColor} border ${isDark ? 'border-orange-500/20' : 'border-orange-100'}`}>
                   <img src={card.img} alt={card.title} className="w-8 h-8" />
                 </div>
 
                 {/* Content */}
-                <h3 className={`text-2xl font-bold mb-3 transition-colors duration-300 ${isDark ? 'text-stone-100' : 'text-stone-900'}`}>
+                <h3 className={`text-2xl font-bold mb-3 transition-colors duration-300 ${isDark ? 'text-white' : 'text-slate-900'}`}>
                   {card.title}
                 </h3>
                 
-                <p className={`flex-1 leading-relaxed transition-colors duration-300 ${isDark ? 'text-stone-400' : 'text-stone-600'}`}>
+                <p className={`flex-1 leading-relaxed transition-colors duration-300 ${isDark ? 'text-gray-400' : 'text-slate-600'}`}>
                   {card.info}
                 </p>
 
@@ -298,13 +536,13 @@ export default function Home() {
               </div>
 
               {/* Hover Effect Overlay */}
-              <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none ${isDark ? 'bg-gradient-to-br from-orange-500/5 to-transparent' : 'bg-gradient-to-br from-orange-50 to-transparent'}`}></div>
+              <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none ${isDark ? 'bg-gradient-to-br from-orange-500/10 to-transparent' : 'bg-gradient-to-br from-orange-50 to-transparent'}`}></div>
             </a>
           ))}
         </div>
 
         {/* Quick Stats */}
-        <div className={`mt-16 max-w-4xl mx-auto rounded-2xl p-8 backdrop-blur-sm border transition-colors duration-500 ${isDark ? 'bg-stone-900/50 border-stone-800' : 'bg-white/50 border-stone-200'}`}>
+        <div className={`mt-16 max-w-4xl mx-auto rounded-2xl p-8 backdrop-blur-sm border transition-colors duration-500 ${isDark ? 'bg-black/50 border-orange-500/20' : 'bg-white/70 border-orange-100'}`}>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {[
               { value: '10K+', label: 'Active Quizzes' },
@@ -313,8 +551,8 @@ export default function Home() {
               { value: '99%', label: 'Satisfaction' }
             ].map((stat, idx) => (
               <div key={idx}>
-                <div className={`text-3xl font-bold mb-1 transition-colors duration-300 ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>{stat.value}</div>
-                <div className={`text-sm transition-colors duration-300 ${isDark ? 'text-stone-500' : 'text-stone-600'}`}>{stat.label}</div>
+                <div className={`text-3xl font-bold mb-1 bg-clip-text text-transparent bg-gradient-to-r ${isDark ? 'from-orange-400 to-amber-400' : 'from-orange-600 to-amber-600'}`}>{stat.value}</div>
+                <div className={`text-sm transition-colors duration-300 ${isDark ? 'text-gray-500' : 'text-slate-600'}`}>{stat.label}</div>
               </div>
             ))}
           </div>
@@ -322,19 +560,19 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className={`relative z-10 border-t transition-colors duration-500 ${isDark ? 'bg-stone-900/80 border-stone-800' : 'bg-white/80 border-stone-200'}`}>
+      <footer className={`relative z-10 border-t transition-colors duration-500 ${isDark ? 'bg-black/80 border-orange-500/20' : 'bg-white/80 border-orange-100'}`}>
         <div className="mx-auto max-w-screen-xl px-4 py-12 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             {/* Logo & Copyright */}
             <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-xl ${isDark ? 'bg-orange-500/20' : 'bg-orange-100'}`}>
+              <div className={`p-2 rounded-xl border ${isDark ? 'bg-gradient-to-br from-orange-500/20 to-orange-600/10 border-orange-500/30' : 'bg-orange-100 border-orange-200'}`}>
                 <img src={logo} alt="Hyper Quizes" className="w-8 h-8" />
               </div>
               <div>
-                <span className={`font-bold transition-colors duration-300 ${isDark ? 'text-stone-100' : 'text-stone-900'}`}>
-                  Hyper<span className="text-orange-500">Quizes</span>
+                <span className={`font-bold transition-colors duration-300 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                  Hyper<span className="text-orange-500">Quizzes</span>
                 </span>
-                <p className={`text-xs transition-colors duration-300 ${isDark ? 'text-stone-500' : 'text-stone-500'}`}>
+                <p className={`text-xs transition-colors duration-300 ${isDark ? 'text-gray-500' : 'text-slate-500'}`}>
                   © 2024 All rights reserved.
                 </p>
               </div>
@@ -346,7 +584,7 @@ export default function Home() {
                 <a
                   key={link}
                   href={`/${link.toLowerCase()}`}
-                  className={`transition-colors duration-300 ${isDark ? 'text-stone-400 hover:text-stone-200' : 'text-stone-600 hover:text-stone-900'}`}
+                  className={`transition-colors duration-300 ${isDark ? 'text-gray-400 hover:text-orange-400' : 'text-slate-600 hover:text-orange-600'}`}
                 >
                   {link}
                 </a>
@@ -362,7 +600,7 @@ export default function Home() {
                 <a
                   key={social.name}
                   href="#"
-                  className={`p-2 rounded-lg transition-all duration-300 hover:scale-110 ${isDark ? 'text-stone-400 hover:text-orange-400 hover:bg-stone-800' : 'text-stone-600 hover:text-orange-500 hover:bg-orange-50'}`}
+                  className={`p-2 rounded-lg transition-all duration-300 hover:scale-110 border ${isDark ? 'text-gray-400 hover:text-orange-400 hover:bg-orange-500/10 border-orange-500/20' : 'text-slate-600 hover:text-orange-500 hover:bg-orange-50 border-slate-200'}`}
                 >
                   <span className="sr-only">{social.name}</span>
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -374,6 +612,17 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* Animation Styles */}
+      <style>{`
+        @keyframes fade-in {
+          from { opacity: 0; transform: scale(0.95) translateY(-10px); }
+          to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.3s ease-out forwards;
+        }
+      `}</style>
     </div>
   )
 }

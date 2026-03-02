@@ -1,13 +1,15 @@
 import loder from "../assets/Rolling@1x-1.0s-200px-200px.gif"
 import logo from "../assets/carrot-diet-fruit-svgrepo-com.svg"
 import { FormEvent, useState, useEffect } from "react"
-import axios from "axios"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useSearchParams} from "react-router-dom"
+import { Notification } from "./notification"
+import { registerAuth } from "../lib/auth"
 
-export default function Reg() {
+export default function Register() {
   const [loading, setLoading] = useState(false)
   const [msg, setMsg] = useState("")
   const [not, setNot] = useState(false)
+  const [error, setError] = useState(false)
   const [isDark, setIsDark] = useState(() => {
     if (typeof window !== 'undefined') {
       const savedTheme = localStorage.getItem('theme');
@@ -16,7 +18,10 @@ export default function Reg() {
     }
     return false;
   })
+
+  const [searchParams] = useSearchParams()
   
+  const isAppAuth = searchParams.get('appauth') === 'true'
   const navigate = useNavigate()
   
   const [profile, setProfile] = useState({
@@ -52,275 +57,306 @@ export default function Reg() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     
-    // Check password match
+    // Validate passwords match
     if (profile.password !== profile.confirmPassword) {
+      setError(true)
       setNot(true)
-      setMsg("## Passwords do not match")
+      setMsg("Passwords do not match")
       return
     }
     
+    if (profile.password.length < 6) {
+      setError(true)
+      setNot(true)
+      setMsg("Password must be at least 6 characters")
+      return
+    }
+    
+    setError(false)
     setLoading(true)
     setNot(false)
     setMsg("")
     
     try {
-      const resp = await axios.post(`${import.meta.env.VITE_URL}/auth/reg`, {
+      const resp:any = await registerAuth({
         email: profile.email,
         password: profile.password
       })
+      console.log("Registered , now continue")
+      setError(false)
       setLoading(false)
       setNot(true)
-      setMsg(resp.data.msg)
+      setMsg(resp.msg || "Account created successfully!")
+ 
+      setTimeout(() => {
+        if(isAppAuth){
+           navigate("/setusername?appauth=true")
+           return
+        }
+        navigate("/setusername")
+      }, 2000)
       
-      // Optional: Auto redirect to login after successful registration
-      if (resp.data.success || resp.data.msg?.toLowerCase().includes("success")) {
-        setTimeout(() => {
-          navigate("/login")
-        }, 2000)
-      }
     } catch (err: any) {
+      setError(true)
       setLoading(false)
       setNot(true)
-      setMsg("## " + (err.response?.data?.msg || err.message || "Registration failed"))
+      setMsg(err.message || "Registration failed")
     }
   }
 
-  document.title = "Register | Hyper Quizes"
+  document.title = "Create Account | Hyper Quizzes"
 
   return (
-    <div className={`min-h-screen transition-colors duration-500 ${isDark ? 'bg-stone-950' : 'bg-orange-50'}`}>
-      {/* Background Shapes */}
+    <div className={`min-h-screen relative overflow-hidden transition-colors duration-500 ${isDark ? 'bg-black' : 'bg-gradient-to-br from-orange-50 via-white to-amber-50'}`}>
+      {/* Animated Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className={`absolute -top-40 -right-40 w-[500px] h-[500px] rounded-full blur-3xl transition-colors duration-700 ${isDark ? 'bg-orange-600/10' : 'bg-orange-300/30'}`}></div>
-        <div className={`absolute -bottom-40 -left-20 w-[400px] h-[400px] rounded-full blur-3xl transition-colors duration-700 ${isDark ? 'bg-amber-600/10' : 'bg-amber-300/30'}`}></div>
+        <div className={`absolute top-0 right-1/4 w-96 h-96 rounded-full blur-[120px] animate-pulse ${isDark ? 'bg-orange-600/20' : 'bg-orange-300/40'}`}></div>
+        <div className={`absolute bottom-0 left-1/4 w-80 h-80 rounded-full blur-[100px] animate-pulse delay-1000 ${isDark ? 'bg-orange-500/10' : 'bg-amber-300/40'}`}></div>
+        <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-[150px] ${isDark ? 'bg-orange-600/5' : 'bg-orange-200/30'}`}></div>
+        
+        {/* Grid pattern for dark mode */}
+        {isDark && (
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(249,115,22,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(249,115,22,0.03)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
+        )}
       </div>
 
-      {/* Theme Toggle */}
-      <button
-        onClick={toggleTheme}
-        className={`fixed top-6 right-6 z-50 p-3 rounded-full transition-all duration-300 hover:scale-110 ${isDark ? 'bg-stone-800 text-amber-400 hover:bg-stone-700' : 'bg-white text-stone-600 shadow-lg hover:shadow-xl'}`}
-      >
-        {isDark ? (
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
-          </svg>
-        ) : (
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-          </svg>
-        )}
-      </button>
+      {/* Header */}
+      <header className="relative z-50 px-4 sm:px-6 lg:px-8 py-4">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <a href="/" className="flex items-center gap-2 group">
+            <div className={`p-2 rounded-xl transition-all duration-300 group-hover:scale-110 border ${isDark ? 'bg-gradient-to-br from-orange-500/20 to-orange-600/10 border-orange-500/30' : 'bg-white shadow-lg border-orange-100'}`}>
+              <img src={logo} alt="Hyper Quizes" className="w-8 h-8" />
+            </div>
+            <span className={`text-xl font-bold transition-colors duration-500 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              Hyper<span className="text-orange-500">Quizes</span>
+            </span>
+          </a>
+          
+          <button
+            onClick={toggleTheme}
+            className={`p-2.5 rounded-xl transition-all duration-300 hover:scale-110 border ${isDark ? 'bg-gray-900 text-orange-400 border-orange-500/30 hover:border-orange-500/50' : 'bg-white text-slate-600 border-slate-200 hover:border-orange-300'}`}
+          >
+            {isDark ? (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+              </svg>
+            )}
+          </button>
+        </div>
+      </header>
 
       {/* Notification */}
-      {not && (
-        <div className={`fixed top-6 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md px-4 animate-slide-down`}>
-          <div className={`rounded-2xl border-l-4 p-4 shadow-2xl backdrop-blur-md ${msg?.includes("##") ? 'bg-red-500/10 border-red-500' : 'bg-green-500/10 border-green-500'}`}>
-            <div className="flex items-start gap-3">
-              <div className={`mt-0.5 ${msg?.includes("##") ? 'text-red-500' : 'text-green-500'}`}>
-                {msg?.includes("##") ? (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                  </svg>
-                ) : (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                  </svg>
-                )}
-              </div>
-              <div className="flex-1">
-                <strong className={`block font-semibold ${msg?.includes("##") ? 'text-red-400' : 'text-green-400'}`}>
-                  {msg?.includes("##") ? "Registration Failed" : "Account Created!"}
-                </strong>
-                <p className={`mt-1 text-sm ${msg?.includes("##") ? 'text-red-300' : 'text-green-300'}`}>
-                  {msg?.replace("## ", "")}
-                </p>
-              </div>
-              <button onClick={() => setNot(false)} className="text-stone-400 hover:text-stone-200">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {not && <Notification show={not} message={msg} type={error ? "error" : "success"} onClose={() => setNot(false)} />}
 
       {/* Main Content */}
-      <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md">
-          {/* Logo & Header */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-20 h-20 mb-4 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 shadow-2xl shadow-orange-500/25">
-              <img 
-                src={logo} 
-                alt="Logo" 
-                className="w-12 h-12 drop-shadow-sm"
-              />
-            </div>
-            <h1 className={`text-3xl font-bold mb-2 transition-colors duration-300 ${isDark ? 'text-stone-100' : 'text-stone-800'}`}>
-              Create Account
-            </h1>
-            <p className={`transition-colors duration-300 ${isDark ? 'text-stone-400' : 'text-stone-600'}`}>
-              Start your learning journey with Hyper Quizes
-            </p>
-          </div>
-
-          {/* Form Card */}
-          <div className={`relative rounded-3xl p-8 shadow-2xl transition-all duration-500 ${isDark ? 'bg-stone-900/80 border border-stone-800' : 'bg-white border border-stone-100'}`}>
-            {/* Decorative top line */}
-            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 rounded-t-3xl"></div>
-
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Email Field */}
-              <div>
-                <label className={`block text-sm font-medium mb-2 transition-colors duration-300 ${isDark ? 'text-stone-300' : 'text-stone-700'}`}>
-                  Email Address
-                </label>
-                <div className="relative group">
-                  <input
-                    type="email"
-                    name="email"
-                    value={profile.email}
-                    onChange={handleChange}
-                    className={`w-full rounded-xl px-4 py-3.5 pl-12 transition-all duration-300 outline-none focus:ring-2 ${isDark ? 'bg-stone-800/50 border-stone-700 text-stone-100 placeholder-stone-500 focus:ring-orange-500/50 focus:border-orange-500' : 'bg-stone-50 border-stone-200 text-stone-900 placeholder-stone-400 focus:ring-orange-500/20 focus:border-orange-500'} border`}
-                    placeholder="you@example.com"
-                    required
-                  />
-                  <div className={`absolute left-4 top-1/2 transform -translate-y-1/2 transition-colors duration-300 ${isDark ? 'text-stone-500 group-focus-within:text-orange-400' : 'text-stone-400 group-focus-within:text-orange-500'}`}>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"></path>
-                    </svg>
-                  </div>
+      <main className="relative z-10 px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div className="max-w-md mx-auto">
+          {/* Card */}
+          <div className={`relative rounded-3xl shadow-2xl overflow-hidden backdrop-blur-xl border transition-colors duration-500 ${isDark ? 'bg-black/80 border-orange-500/20' : 'bg-white/90 border-orange-100'}`}>
+            {/* Top Gradient Bar */}
+            <div className="h-1.5 bg-gradient-to-r from-orange-600 via-orange-500 to-amber-500"></div>
+            
+            <div className="p-6 sm:p-8">
+              {/* Header */}
+              <div className="text-center mb-8">
+                <div className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 border transition-colors duration-500 ${isDark ? 'bg-gradient-to-br from-orange-500/20 to-orange-600/10 border-orange-500/30' : 'bg-orange-100 border-orange-200'}`}>
+                  <svg className={`w-8 h-8 ${isDark ? 'text-orange-500' : 'text-orange-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                  </svg>
                 </div>
-              </div>
+                <h1 className={`text-2xl sm:text-3xl font-bold mb-2 transition-colors duration-500 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                  Create Account
+                </h1>
+                <p className={`text-sm sm:text-base transition-colors duration-500 ${isDark ? 'text-gray-400' : 'text-slate-600'}`}>
+                  Join thousands of learners on Hyper Quizes
+                </p>
 
-              {/* Password Field */}
-              <div>
-                <label className={`block text-sm font-medium mb-2 transition-colors duration-300 ${isDark ? 'text-stone-300' : 'text-stone-700'}`}>
-                  Password
-                </label>
-                <div className="relative group">
-                  <input
-                    type="password"
-                    name="password"
-                    value={profile.password}
-                    onChange={handleChange}
-                    className={`w-full rounded-xl px-4 py-3.5 pl-12 transition-all duration-300 outline-none focus:ring-2 ${isDark ? 'bg-stone-800/50 border-stone-700 text-stone-100 placeholder-stone-500 focus:ring-orange-500/50 focus:border-orange-500' : 'bg-stone-50 border-stone-200 text-stone-900 placeholder-stone-400 focus:ring-orange-500/20 focus:border-orange-500'} border`}
-                    placeholder="••••••••"
-                    required
-                  />
-                  <div className={`absolute left-4 top-1/2 transform -translate-y-1/2 transition-colors duration-300 ${isDark ? 'text-stone-500 group-focus-within:text-orange-400' : 'text-stone-400 group-focus-within:text-orange-500'}`}>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                {isAppAuth && (
+                  <span className={`inline-flex items-center gap-1.5 mt-3 px-3 py-1 rounded-full text-xs font-medium border transition-colors duration-500 ${isDark ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' : 'bg-orange-100 text-orange-700 border-orange-200'}`}>
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                     </svg>
-                  </div>
-                </div>
-              </div>
-
-              {/* Confirm Password Field */}
-              <div>
-                <label className={`block text-sm font-medium mb-2 transition-colors duration-300 ${isDark ? 'text-stone-300' : 'text-stone-700'}`}>
-                  Confirm Password
-                </label>
-                <div className="relative group">
-                  <input
-                    type="password"
-                    name="confirmPassword"
-                    value={profile.confirmPassword}
-                    onChange={handleChange}
-                    className={`w-full rounded-xl px-4 py-3.5 pl-12 transition-all duration-300 outline-none focus:ring-2 ${isDark ? 'bg-stone-800/50 border-stone-700 text-stone-100 placeholder-stone-500 focus:ring-orange-500/50 focus:border-orange-500' : 'bg-stone-50 border-stone-200 text-stone-900 placeholder-stone-400 focus:ring-orange-500/20 focus:border-orange-500'} border`}
-                    placeholder="••••••••"
-                    required
-                  />
-                  <div className={`absolute left-4 top-1/2 transform -translate-y-1/2 transition-colors duration-300 ${isDark ? 'text-stone-500 group-focus-within:text-orange-400' : 'text-stone-400 group-focus-within:text-orange-500'}`}>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
-              {/* Terms Checkbox */}
-              <div className="flex items-start gap-3">
-                <input 
-                  type="checkbox" 
-                  id="terms"
-                  className={`w-4 h-4 mt-1 rounded border transition-colors duration-300 ${isDark ? 'border-stone-600 bg-stone-800 text-orange-500' : 'border-stone-300 text-orange-500'}`}
-                  required
-                />
-                <label htmlFor="terms" className={`text-sm leading-relaxed transition-colors duration-300 ${isDark ? 'text-stone-400' : 'text-stone-600'}`}>
-                  I agree to the{' '}
-                  <a href="/terms" className="text-orange-500 hover:text-orange-400 font-medium">Terms of Service</a>
-                  {' '}and{' '}
-                  <a href="/privacy" className="text-orange-500 hover:text-orange-400 font-medium">Privacy Policy</a>
-                </label>
-              </div>
-
-              {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={loading}
-                className={`w-full relative overflow-hidden rounded-xl py-4 px-4 font-bold text-white transition-all duration-300 ${loading ? 'cursor-not-allowed opacity-80' : 'hover:shadow-xl hover:shadow-orange-500/25 hover:-translate-y-0.5'}`}
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 animate-gradient-shift"></div>
-                {loading ? (
-                  <div className="relative flex items-center justify-center gap-3">
-                    <span className="text-lg">Creating account...</span>
-                    <img src={loder} width="24" height="24" alt="Loading" className="invert" />
-                  </div>
-                ) : (
-                  <span className="relative flex items-center justify-center gap-2 text-lg">
-                    Create Account
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-                    </svg>
+                    App Auth
                   </span>
                 )}
-              </button>
-            </form>
+              </div>
 
-            {/* Sign In Link */}
-            <div className={`mt-8 pt-6 text-center border-t transition-colors duration-300 ${isDark ? 'border-stone-800' : 'border-stone-100'}`}>
-              <p className={`text-sm transition-colors duration-300 ${isDark ? 'text-stone-400' : 'text-stone-600'}`}>
+              {/* Form */}
+              <form onSubmit={handleSubmit} className="space-y-5">
+                {/* Email */}
+                <div>
+                  <label className={`block text-sm font-medium mb-2 transition-colors duration-500 ${isDark ? 'text-gray-300' : 'text-slate-700'}`}>
+                    Email Address
+                  </label>
+                  <div className="relative">
+                    <div className={`absolute left-4 top-1/2 -translate-y-1/2 ${isDark ? 'text-orange-500/60' : 'text-slate-400'}`}>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                      </svg>
+                    </div>
+                    <input
+                      type="email"
+                      name="email"
+                      value={profile.email}
+                      onChange={handleChange}
+                      className={`w-full pl-12 pr-4 py-3.5 rounded-xl border-2 outline-none transition-all duration-200 ${isDark ? 'bg-gray-900/50 border-gray-800 text-white placeholder-gray-500 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 hover:border-orange-500/30' : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10'}`}
+                      placeholder="name@example.com"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Password */}
+                <div>
+                  <label className={`block text-sm font-medium mb-2 transition-colors duration-500 ${isDark ? 'text-gray-300' : 'text-slate-700'}`}>
+                    Password
+                  </label>
+                  <div className="relative">
+                    <div className={`absolute left-4 top-1/2 -translate-y-1/2 ${isDark ? 'text-orange-500/60' : 'text-slate-400'}`}>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                    </div>
+                    <input
+                      type="password"
+                      name="password"
+                      value={profile.password}
+                      onChange={handleChange}
+                      className={`w-full pl-12 pr-4 py-3.5 rounded-xl border-2 outline-none transition-all duration-200 ${isDark ? 'bg-gray-900/50 border-gray-800 text-white placeholder-gray-500 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 hover:border-orange-500/30' : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10'}`}
+                      placeholder="••••••••"
+                      minLength={6}
+                      required
+                    />
+                  </div>
+                  <p className={`mt-1.5 text-xs transition-colors duration-500 ${isDark ? 'text-gray-500' : 'text-slate-500'}`}>
+                    Must be at least 6 characters
+                  </p>
+                </div>
+
+                {/* Confirm Password */}
+                <div>
+                  <label className={`block text-sm font-medium mb-2 transition-colors duration-500 ${isDark ? 'text-gray-300' : 'text-slate-700'}`}>
+                    Confirm Password
+                  </label>
+                  <div className="relative">
+                    <div className={`absolute left-4 top-1/2 -translate-y-1/2 ${isDark ? 'text-orange-500/60' : 'text-slate-400'}`}>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <input
+                      type="password"
+                      name="confirmPassword"
+                      value={profile.confirmPassword}
+                      onChange={handleChange}
+                      className={`w-full pl-12 pr-4 py-3.5 rounded-xl border-2 outline-none transition-all duration-200 ${isDark ? 'bg-gray-900/50 border-gray-800 text-white placeholder-gray-500 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 hover:border-orange-500/30' : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10'}`}
+                      placeholder="••••••••"
+                      required
+                    />
+                  </div>
+                  {profile.confirmPassword && profile.password !== profile.confirmPassword && (
+                    <p className="mt-1.5 text-xs text-red-500">Passwords do not match</p>
+                  )}
+                  {profile.confirmPassword && profile.password === profile.confirmPassword && profile.password.length >= 6 && (
+                    <p className="mt-1.5 text-xs text-green-500">Passwords match!</p>
+                  )}
+                </div>
+
+                {/* Terms */}
+                <div className="flex items-start gap-3">
+                  <input 
+                    type="checkbox" 
+                    id="terms"
+                    className={`w-4 h-4 mt-0.5 rounded border-2 transition-colors ${isDark ? 'border-gray-700 bg-gray-900 text-orange-500 focus:ring-orange-500/20' : 'border-slate-300 text-orange-500'}`}
+                    required
+                  />
+                  <label htmlFor="terms" className={`text-sm leading-relaxed transition-colors duration-500 ${isDark ? 'text-gray-400' : 'text-slate-600'}`}>
+                    I agree to the{' '}
+                    <a href="/terms" className="text-orange-500 hover:text-orange-400 font-medium">Terms of Service</a>
+                    {' '}and{' '}
+                    <a href="/privacy" className="text-orange-500 hover:text-orange-400 font-medium">Privacy Policy</a>
+                  </label>
+                </div>
+
+                {/* Submit */}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className={`w-full relative group overflow-hidden rounded-xl py-4 font-bold text-white shadow-lg transition-all duration-300 ${loading ? 'cursor-not-allowed opacity-70' : 'hover:shadow-orange-500/40 hover:-translate-y-0.5 active:translate-y-0'}`}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-orange-600 via-orange-500 to-amber-500"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+                  <span className="relative flex items-center justify-center gap-2">
+                    {loading ? (
+                      <>
+                        <span>Creating account...</span>
+                        <img src={loder} width="20" height="20" alt="" className={isDark ? 'invert' : ''} />
+                      </>
+                    ) : (
+                      <>
+                        <span>Create Account</span>
+                        <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                      </>
+                    )}
+                  </span>
+                </button>
+              </form>
+
+              {/* Divider */}
+              <div className="relative my-6">
+                <div className={`absolute inset-0 flex items-center transition-colors duration-500 ${isDark ? 'text-gray-800' : 'text-slate-300'}`}>
+                  <div className={`w-full border-t transition-colors duration-500 ${isDark ? 'border-orange-500/20' : 'border-slate-200'}`}></div>
+                </div>
+                <div className="relative flex justify-center">
+                  <span className={`px-4 text-sm transition-colors duration-500 ${isDark ? 'bg-black text-gray-500' : 'bg-white text-slate-500'}`}>
+                    or
+                  </span>
+                </div>
+              </div>
+
+              {/* Sign In Link */}
+              <p className={`text-center text-sm transition-colors duration-500 ${isDark ? 'text-gray-400' : 'text-slate-600'}`}>
                 Already have an account?{' '}
-                <a href="/login" className="font-semibold text-orange-500 hover:text-orange-400 transition-colors">
-                  Sign in here
+                <a href={isAppAuth ? "/login?appauth=true" :"/login"} className="font-semibold text-orange-500 hover:text-orange-400 transition-colors inline-flex items-center gap-1 group">
+                  Sign in
+                  <svg className="w-4 h-4 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
                 </a>
               </p>
             </div>
           </div>
 
-          {/* Back to Home */}
-          <div className="text-center mt-6">
-            <a 
-              href="/" 
-              className={`inline-flex items-center gap-2 text-sm transition-colors duration-300 ${isDark ? 'text-stone-500 hover:text-stone-300' : 'text-stone-500 hover:text-stone-700'}`}
-            >
+          {/* Footer Links */}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-4 text-sm">
+            <a href="/" className={`flex items-center gap-1.5 transition-colors duration-500 ${isDark ? 'text-gray-500 hover:text-orange-400' : 'text-slate-500 hover:text-slate-700'}`}>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
               </svg>
               Back to home
             </a>
+            <span className={`transition-colors duration-500 ${isDark ? 'text-gray-800' : 'text-slate-300'}`}>|</span>
+            <a href="/help" className={`transition-colors duration-500 ${isDark ? 'text-gray-500 hover:text-orange-400' : 'text-slate-500 hover:text-slate-700'}`}>
+              Need help?
+            </a>
           </div>
         </div>
-      </div>
+      </main>
 
       {/* Styles */}
       <style>{`
-        @keyframes gradient-shift {
-          0%, 100% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
+        @keyframes float-slow {
+          0%, 100% { transform: translateY(0) translateX(0); }
+          50% { transform: translateY(-20px) translateX(10px); }
         }
-        .animate-gradient-shift {
-          background-size: 200% 200%;
-          animation: gradient-shift 3s ease infinite;
-        }
-        @keyframes slide-down {
-          from { transform: translate(-50%, -100%); opacity: 0; }
-          to { transform: translate(-50%, 0); opacity: 1; }
-        }
-        .animate-slide-down {
-          animation: slide-down 0.3s ease-out;
+        .animate-float-slow {
+          animation: float-slow 8s ease-in-out infinite;
         }
       `}</style>
     </div>
