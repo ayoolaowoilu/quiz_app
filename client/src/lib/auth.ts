@@ -99,16 +99,14 @@ const loginAuth = async (credentials: UserDetails): Promise<AuthResponse> => {
       body: JSON.stringify(credentials),
     });
 
-    // FIXED: Check data.data.token instead of just data.token
     if (data.error) {
       throw new Error(data.msg || data.error || 'Login failed');
     }
 
-    // FIXED: Token is usually in data.data.token based on your AuthResponse type
+
     const token = data.data?.token || data.token;
     if (token) {
       localStorage.setItem("token", token);
-      // Fetch user data after storing token
     
     await  getUserData(token);
       
@@ -144,7 +142,7 @@ const registerAuth = async (credentials: UserDetails): Promise<AuthResponse> => 
       throw new Error(data.msg || data.error || 'Registration failed');
     }
     
-    // FIXED: Check data.data.token instead of data.token
+
     const token = data.data?.token || data.token;
     if (token) {
 

@@ -9,6 +9,10 @@ import { CookieConsent } from './components/cookies'
 
 
 import { BrowserRouter,Routes,Route } from "react-router-dom"
+import Terms from './components/tpa/terms'
+import Privacy from './components/tpa/privacy'
+import About from './components/tpa/about'
+import Contact from './components/tpa/contact'
 
 
 
@@ -28,6 +32,10 @@ function App() {
      <Route  path='/login' element={<Login />} />
      <Route path="/reg" element={<Reg />} />
      <Route index path='/' element={<Gen />} />
+     <Route  path="/terms" element={<Terms />} />
+     <Route path='/privacy' element={<Privacy />} />
+     <Route path="/about" element={<About />} />
+     <Route path='/contact' element={<Contact />} />
      <Route element={<Auth />} >
      <Route path="/home" element={<Home />} />
        <Route path='/setusername' element={<SetUsername />} />

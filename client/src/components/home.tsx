@@ -2,8 +2,9 @@ import world from "../assets/world-1-svgrepo-com.svg"
 import create from "../assets/plus-svgrepo-com.svg"
 import join from "../assets/link-svgrepo-com.svg"
 import logo from "../assets/carrot-diet-fruit-svgrepo-com.svg"
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
+import { logoutAuth } from "../lib/auth"
 
 export default function Home() {
   const navigate = useNavigate()
@@ -15,31 +16,26 @@ export default function Home() {
         (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
     }
     return false;
-  })
+  });
   
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [profileOpen, setProfileOpen] = useState(false)
-  const [appDropdownOpen, setAppDropdownOpen] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
-  const profileRef = useRef<HTMLDivElement>(null)
-  const appDropdownRef = useRef<HTMLDivElement>(null)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [appDropdownOpen, setAppDropdownOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
+  const appDropdownRef = useRef<HTMLDivElement>(null);
 
-  // Get user data from localStorage
-  const username = localStorage.getItem("username")
-  const email = localStorage.getItem("email")
-  const userId = localStorage.getItem("id")
-  const displayName = username ? `@${username}` : `User${userId}`
-  const avatarLetter = (username || `User${userId}`).charAt(0).toUpperCase()
+ 
+  const username = localStorage.getItem("username");
+  const email = localStorage.getItem("email");
+  const userId = localStorage.getItem("id");
+  const displayName = username ? `@${username}` : `User${userId}`;
+  const avatarLetter = (username || `User${userId}`).charAt(0).toUpperCase();
 
   useEffect(() => {
-    // Check if logged in
-    const token = localStorage.getItem("token")
-    if (!token) {
-      navigate("/login")
-    }
-
-    // Detect mobile device
+    console.log(navigate)
+    document.title = "Home | Hyper Quizes"
     const checkMobile = () => {
       const userAgent = navigator.userAgent || navigator.vendor
       const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
@@ -49,7 +45,7 @@ export default function Home() {
     checkMobile()
     window.addEventListener('resize', checkMobile)
 
-    // Detect scroll for nav styling
+    
     const handleScroll = () => {
       setScrolled(window.scrollY > 20)
     }
@@ -60,9 +56,8 @@ export default function Home() {
       window.removeEventListener('resize', checkMobile)
       window.removeEventListener('scroll', handleScroll)
     }
-  }, [navigate])
+  }, [navigate]);
 
-  // Close dropdowns when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
@@ -74,9 +69,9 @@ export default function Home() {
     }
     document.addEventListener("mousedown", handleClickOutside)
     return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [])
+  }, []);
 
-  const toggleTheme = () => {
+  const toggleTheme = useCallback(() => {
     const newTheme = !isDark
     setIsDark(newTheme)
     if (newTheme) {
@@ -86,27 +81,24 @@ export default function Home() {
       document.documentElement.classList.remove('dark')
       localStorage.setItem('theme', 'light')
     }
-  }
+  },[isDark]);
 
   const logout = () => {
-    localStorage.removeItem("token")
-    localStorage.removeItem("username")
-    localStorage.removeItem("email")
-    localStorage.removeItem("id")
-    window.location.href = "/login"
-  }
+   logoutAuth("Web")
+  };
 
   const handleGetApp = () => {
     if (isMobile) {
-      // Direct download for mobile - Android APK
+      
       window.location.href = "/download/hyperquizzes.apk"
     } else {
-      // Toggle dropdown for PC
+    
       setAppDropdownOpen(!appDropdownOpen)
     }
-  }
+  };
 
-  const cards = [
+  const cards = useMemo(()=>{
+     return [
     {
       title: "Join a Quiz",
       info: "Use a token sent by the quiz creator to join the quiz room. Your results will be sent directly to your email. Have fun! 🎉",
@@ -133,16 +125,16 @@ export default function Home() {
       bgColor: "bg-yellow-500/10"
     }
   ]
+  },[]);
 
-  // QR Code SVG Component
-  const QRCodeSVG = () => (
+  const QRCodeSVG = useCallback(() => (
     <svg viewBox="0 0 200 200" className="w-full h-full">
-      {/* Background */}
+     
       <rect width="200" height="200" fill="white"/>
       
-      {/* QR Code Pattern - Simplified representation */}
+      
       <g fill="black">
-        {/* Position Detection Patterns */}
+      
         <rect x="10" y="10" width="50" height="50" fill="black"/>
         <rect x="20" y="20" width="30" height="30" fill="white"/>
         <rect x="25" y="25" width="20" height="20" fill="black"/>
@@ -171,19 +163,21 @@ export default function Home() {
       <circle cx="100" cy="100" r="15" fill="white"/>
       <circle cx="100" cy="100" r="10" fill="#f97316"/>
     </svg>
-  )
+  ),[]);
 
-  document.title = "Home | Hyper Quizes"
+ 
+ 
 
-  return (
+
+            return (
     <div className={`min-h-screen relative overflow-hidden transition-colors duration-500 ${isDark ? 'bg-black' : 'bg-gradient-to-br from-orange-50 via-white to-amber-50'}`}>
-      {/* Animated Background Effects */}
+     
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className={`absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full blur-[120px] animate-pulse transition-colors duration-700 ${isDark ? 'bg-orange-600/20' : 'bg-orange-300/30'}`}></div>
         <div className={`absolute -bottom-40 -left-20 w-[500px] h-[500px] rounded-full blur-[100px] animate-pulse delay-1000 transition-colors duration-700 ${isDark ? 'bg-orange-500/10' : 'bg-amber-300/30'}`}></div>
         <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full blur-[150px] ${isDark ? 'bg-orange-600/5' : 'bg-orange-200/20'}`}></div>
         
-        {/* Grid pattern for dark mode */}
+       
         {isDark && (
           <div className="absolute inset-0 bg-[linear-gradient(rgba(249,115,22,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(249,115,22,0.03)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
         )}
@@ -373,14 +367,14 @@ export default function Home() {
               </button>
 
               {/* Mobile Profile Button */}
-              <button
+              {/* <button
                 onClick={() => setProfileOpen(!profileOpen)}
                 className={`p-2 rounded-lg transition-all duration-300 border ${isDark ? 'bg-gray-900 border-orange-500/30' : 'bg-white border-slate-200'}`}
               >
                 <div className="w-6 h-6 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white font-bold text-xs">
                   {avatarLetter}
                 </div>
-              </button>
+              </button> */}
 
               <button
                 onClick={toggleTheme}
@@ -624,5 +618,8 @@ export default function Home() {
         }
       `}</style>
     </div>
-  )
-}
+  );
+
+
+ 
+};
