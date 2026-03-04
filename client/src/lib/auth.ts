@@ -53,7 +53,7 @@ const fetchWithError = async (url: string, options: RequestInit) => {
 };
 
 
-const getUserData = async (token:any) => {
+const getUserData = async (token?:any) => {
  
   
   if (!token) {
@@ -66,8 +66,7 @@ const getUserData = async (token:any) => {
       headers: getAuthHeaders(token),
     });
    
-    console.log(data)
-    
+
 
     if (data.error) {
       throw new Error(data.msg || 'Failed to fetch user data');
@@ -194,13 +193,28 @@ const isAuthenticated = () => {
   return !!localStorage.getItem('token');
 };
 
+  const fetchRecents = async(id:number)=>{
+          try {
+            console.log("Fetch start")
+              const response = await fetch(`${API_URL}/players/recent/${id}`,{
+                  method:"GET",
+                  headers:{"Content-Type":"application/json"}
+              })
+              const data = await response.json()
+              return data;
+          } catch (error) {
+            console.log(error)
+          }
+      }
+
+
 export { 
   loginAuth, 
   getUserData, 
   registerAuth, 
   logoutAuth,
   isAuthenticated,
-  checkUsername,
+  checkUsername,fetchRecents,
   type UserDetails,
   type AuthResponse 
 };

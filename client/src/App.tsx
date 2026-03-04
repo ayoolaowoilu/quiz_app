@@ -13,6 +13,8 @@ import Terms from './components/tpa/terms'
 import Privacy from './components/tpa/privacy'
 import About from './components/tpa/about'
 import Contact from './components/tpa/contact'
+import ProfileSettings from './components/profile'
+import Stats from './components/stats'
 
 
 
@@ -36,8 +38,10 @@ function App() {
      <Route path='/privacy' element={<Privacy />} />
      <Route path="/about" element={<About />} />
      <Route path='/contact' element={<Contact />} />
+     <Route path="/stats" element={<Stats />} />
      <Route element={<Auth />} >
      <Route path="/home" element={<Home />} />
+     <Route path='/profile' element={<ProfileSettings />} />
        <Route path='/setusername' element={<SetUsername />} />
      </Route>
      

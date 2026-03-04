@@ -495,7 +495,6 @@ export default function Home() {
               href={card.path}
               className={`group relative block rounded-3xl overflow-hidden transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl ${isDark ? 'bg-black/60 border border-orange-500/20 hover:border-orange-500/40' : 'bg-white border border-orange-100'} ${card.comingSoon ? 'opacity-75' : ''}`}
             >
-              {/* Gradient Top Border */}
               <div className={`absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r ${card.color}`}></div>
               
               {/* Coming Soon Badge */}
