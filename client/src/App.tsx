@@ -15,6 +15,7 @@ import About from './components/tpa/about'
 import Contact from './components/tpa/contact'
 import ProfileSettings from './components/profile'
 import Stats from './components/stats'
+import JoinQuiz from './components/Quiz/join-quiz'
 
 
 
@@ -39,6 +40,7 @@ function App() {
      <Route path="/about" element={<About />} />
      <Route path='/contact' element={<Contact />} />
      <Route path="/stats" element={<Stats />} />
+     <Route path='/join-quiz' element={<JoinQuiz />} />
      <Route element={<Auth />} >
      <Route path="/home" element={<Home />} />
      <Route path='/profile' element={<ProfileSettings />} />
