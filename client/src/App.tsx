@@ -16,6 +16,8 @@ import Contact from './components/tpa/contact'
 import ProfileSettings from './components/profile'
 import Stats from './components/stats'
 import JoinQuiz from './components/Quiz/join-quiz'
+import CreateQuiz from './components/Quiz/create-quiz'
+import Explore from './components/Quiz/explore'
 
 
 
@@ -40,11 +42,13 @@ function App() {
      <Route path="/about" element={<About />} />
      <Route path='/contact' element={<Contact />} />
      <Route path="/stats" element={<Stats />} />
+     <Route path='/explore' element={<Explore />} />
      <Route path='/join-quiz' element={<JoinQuiz />} />
      <Route element={<Auth />} >
      <Route path="/home" element={<Home />} />
      <Route path='/profile' element={<ProfileSettings />} />
        <Route path='/setusername' element={<SetUsername />} />
+       <Route path='/create-quiz' element={<CreateQuiz />} />
      </Route>
      
     </Routes>
