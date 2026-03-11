@@ -1,3 +1,5 @@
+
+
 const API_URL = import.meta.env.VITE_URL || "http://localhost:1234";
 
 // import { createClient } from "redis";
@@ -25,4 +27,24 @@ const API_URL = import.meta.env.VITE_URL || "http://localhost:1234";
          }
   }
 
-  export { getQuizById }
+  type update_data = {
+         id:any,
+         failed:number,
+         passed:number
+  }
+  const updateQuiz  = async(data:update_data)=>{
+          try {
+             const response = await fetch(`${API_URL}/quizes/update-when-taken`,{
+                 method:"POST",
+                 headers:{"Content-Type":"application/json"},
+                 body:JSON.stringify(data)
+             })
+              const dataa = await response.json()
+        
+               return dataa;
+         } catch (error) {
+          console.log(error)
+         }   
+  }
+
+  export { getQuizById,updateQuiz }

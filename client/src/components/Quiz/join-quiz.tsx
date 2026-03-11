@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback ,useRef} from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { getQuizById } from "../../lib/quiz";
+import { getQuizById, updateQuiz } from "../../lib/quiz";
 import logo from "../../assets/carrot-diet-fruit-svgrepo-com.svg"
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -349,7 +349,7 @@ export default function JoinQuiz() {
     }
   };
 
-  const handleSubmitQuiz = useCallback(() => {
+  const handleSubmitQuiz = useCallback(async() => {
     if (!quiz) return;
     
     const timeTaken = quiz.isTimed ? (quiz.duration * 60) - timeRemaining : 0;
@@ -371,6 +371,10 @@ export default function JoinQuiz() {
     
     const score = Math.round((correctCount / quiz.questions.length) * 100);
     const passed = score >= Number(quiz.passingScore);
+    const id = localStorage.getItem("id")
+    if(!id){
+        await updateQuiz({id:quiz_id,failed: !passed ? 1 : 0 , passed:passed ? 1 : 0})
+    }
     
     setQuizResult({ score, correctAnswers: correctCount, totalQuestions: quiz.questions.length, timeTaken, passed });
     setStage(3);
