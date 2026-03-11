@@ -373,13 +373,14 @@ export default function JoinQuiz() {
     const passed = score >= Number(quiz.passingScore);
 
    
-      
-
+      setIsLoading(true)
+  const userrr=    await updateQuiz({id:quiz_id,failed: !passed ? 1 : 0 , passed:passed ? 1 : 0})
+   setIsLoading(false)
+   console.log(userrr) 
     
     setQuizResult({ score, correctAnswers: correctCount, totalQuestions: quiz.questions.length, timeTaken, passed });
     setStage(3);
-   const userrr=    await updateQuiz({id:quiz_id,failed: !passed ? 1 : 0 , passed:passed ? 1 : 0})
-   console.log(userrr)
+ 
   }, [quiz, selectedAnswers, timeRemaining]);
 
   const formatTime = (seconds: number) => {
