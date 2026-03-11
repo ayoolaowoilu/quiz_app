@@ -288,7 +288,7 @@ export default function Explore() {
 
   const copyLink = (id: number, e: React.MouseEvent) => {
     e.stopPropagation();
-    navigator.clipboard.writeText(`https://hyperquizzes.com/join?id=${id}`);
+    navigator.clipboard.writeText(`https://hyperquizes.netlify.app/join?id=${id}`);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
     setOpenMenuId(null);
@@ -730,14 +730,14 @@ export default function Explore() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  onClick={() => navigate(`/join-quiz?id=${quiz.id}`)}
+                //   onClick={() => navigate(`/join-quiz?id=${quiz.id}`)}
                   className="group relative"
                 >
                   <GlassCard 
                     className={`${viewMode === "list" ? 'flex flex-col md:flex-row md:items-center gap-4 p-4' : 'flex flex-col h-full'} cursor-pointer`} 
                     isDark={isDark}
                   >
-                    {/* Image/Icon Section */}
+                
                     <div className={`${viewMode === "list" ? 'w-full md:w-48 shrink-0' : 'w-full h-48'} relative overflow-hidden rounded-xl ${isDark ? 'bg-gray-900' : 'bg-gray-100'}`}>
                       <div className="absolute inset-0 flex items-center justify-center">
                         <div className={`w-20 h-20 rounded-2xl flex items-center justify-center border-2 ${getTypeColor(quiz._type, isDark)}`}>
@@ -759,7 +759,7 @@ export default function Explore() {
                         )}
                       </div>
 
-                      {/* 3-Dot Menu */}
+                      
                       <div className="absolute top-3 right-3" ref={openMenuId === quiz.id ? menuRef : null}>
                         <button
                           onClick={(e) => {
@@ -775,7 +775,7 @@ export default function Explore() {
                           <MoreVertical className="w-4 h-4" />
                         </button>
 
-                        {/* Dropdown Menu */}
+                       
                         <AnimatePresence>
                           {openMenuId === quiz.id && (
                             <motion.div

@@ -1039,7 +1039,7 @@ export default function JoinQuiz() {
             
     <div className={`sticky top-0 z-40 space-y-6 backdrop-blur-md ${isDark ? 'bg-slate-950/80 border-slate-800' : 'bg-white/80 border-slate-200'}`}>
             <div>
-                   Q{currentQuestionIndex + 1} - {currentQuestion.question}
+                   Q{currentQuestionIndex + 1}:  {currentQuestion.question}
             </div>
 
               {renderQuestionInput()}
