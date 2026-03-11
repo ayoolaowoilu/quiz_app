@@ -372,12 +372,13 @@ export default function JoinQuiz() {
     const score = Math.round((correctCount / quiz.questions.length) * 100);
     const passed = score >= Number(quiz.passingScore);
     const id = localStorage.getItem("id")
-    if(!id){
-        await updateQuiz({id:quiz_id,failed: !passed ? 1 : 0 , passed:passed ? 1 : 0})
-    }
+   
+      
+
     
     setQuizResult({ score, correctAnswers: correctCount, totalQuestions: quiz.questions.length, timeTaken, passed });
     setStage(3);
+      await updateQuiz({id:quiz_id,failed: !passed ? 1 : 0 , passed:passed ? 1 : 0})
   }, [quiz, selectedAnswers, timeRemaining]);
 
   const formatTime = (seconds: number) => {
