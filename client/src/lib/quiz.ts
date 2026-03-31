@@ -2,13 +2,7 @@
 
 const API_URL = import.meta.env.VITE_URL || "http://localhost:1234";
 
-// import { createClient } from "redis";
 
-// const client = createClient({
-//      url:API_URL
-// })
-
-// client.connect()
 
 
 
@@ -47,4 +41,28 @@ const API_URL = import.meta.env.VITE_URL || "http://localhost:1234";
          }   
   }
 
-  export { getQuizById,updateQuiz }
+  const fetchRandomQuizzes = async () => {
+    try {
+       const response = await fetch(`${API_URL}/quizes/random10`);
+        const data = await response.json();
+        return data;
+}
+
+      catch (error) {
+         throw new Error("Failed to fetch random quizzes" + error);
+      }
+}
+
+const fetchSearchByQuery = async (query:string) => {
+    try {
+       const response = await fetch(`${API_URL}/quizes/searchquery`,{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({query})
+       });
+        const data = await response.json();
+        return data;
+}catch (error) {
+         throw new Error("Failed to fetch search results" + error);
+      }}
+  export { getQuizById,updateQuiz,fetchRandomQuizzes , fetchSearchByQuery }

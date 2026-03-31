@@ -7,7 +7,6 @@ import {
   Trophy, 
   Clock, 
   Target, 
-  Users, 
   Play, 
   ChevronRight, 
   CheckCircle2, 
@@ -36,6 +35,8 @@ import {
   Moon,
   Sun,
   Check,
+  RefreshCcwIcon,
+  Book,
 } from "lucide-react";
 import { getUserData } from "../../lib/auth";
 
@@ -143,7 +144,7 @@ const Button = ({ children, onClick, disabled = false, variant = "primary", clas
 
 export default function JoinQuiz() {
   const [quiz, setQuiz] = useState<Quiz_loaded | any>(null);
-  const [stage, setStage] = useState<1 | 2 | 3 | 4 | 5>(1);
+  const [stage, setStage] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7>(1);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -221,10 +222,9 @@ export default function JoinQuiz() {
     document.documentElement.classList.toggle('dark', isDark);
   }, [isDark]);
 
-  // Fetch quiz and handle auth logic
-  useEffect(() => {
-    if (quiz_id) {
-      const fetchData = async () => {
+
+
+   const fetchData = async () => {
         try {
           setIsLoading(true);
           const token = localStorage.getItem("token");
@@ -233,8 +233,11 @@ export default function JoinQuiz() {
         
 
           const quizResp = await getQuizById(Number(quiz_id));
-          
-        
+          console.log(quizResp)
+          if(!quizResp){
+                setStage(7)
+                return
+          }
        
           if (quizResp.questions && Array.isArray(quizResp.questions)) {
             quizResp.questions = quizResp.questions.map((q: any) => {
@@ -257,7 +260,7 @@ export default function JoinQuiz() {
               };
             });
           } else {
-            console.error("No questions found or invalid format");
+            setStage(6);
             quizResp.questions = [];
           }
           
@@ -300,6 +303,11 @@ export default function JoinQuiz() {
           setIsLoading(false);
         }
       };
+
+
+  useEffect(() => {
+    if (quiz_id) {
+     
       fetchData();
     }
   }, [quiz_id]);
@@ -425,7 +433,7 @@ export default function JoinQuiz() {
               <LogIn className="w-4 h-4 mr-2" />
               Sign In
             </Button>
-            <Button variant="ghost" onClick={() => navigate("/join")} className="w-full" isDark={isDark}>
+            <Button variant="ghost" onClick={() => navigate("/join-quiz")} className="w-full" isDark={isDark}>
               Back to Explore
             </Button>
           </div>
@@ -454,6 +462,60 @@ export default function JoinQuiz() {
           <Button onClick={() => navigate("/join")} className="w-full" isDark={isDark}>
             Explore Other Quizzes
           </Button>
+        </GlassCard>
+      </div>
+    );
+  }
+
+    if (stage === 6) {
+    return (
+      <div className={`min-h-screen relative flex items-center justify-center p-4 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
+        <AnimatedBackground isDark={isDark} />
+        <DarkModeToggle isDark={isDark} toggle={toggleDarkMode} />
+        
+        <GlassCard className="w-full max-w-sm p-6 text-center" isDark={isDark}>
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-rose-500/20 flex items-center justify-center">
+            <RefreshCcwIcon className="w-8 h-8 text-rose-500" />
+          </div>
+          
+          <h2 className="text-xl font-semibold mb-2 text-rose-500">Network Error</h2>
+          <p className={`text-sm mb-6 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+           No Internet connection
+          </p>
+          
+          <Button onClick={() => fetchData()} className="w-full mb-4" isDark={isDark}>
+             Try Again
+          </Button>
+          <Button onClick={() => navigate("/explore")} className="w-full" isDark={isDark}>
+             Go To Explore page
+          </Button>
+
+        </GlassCard>
+      </div>
+    );
+  }
+
+    if (stage === 7) {
+    return (
+      <div className={`min-h-screen relative flex items-center justify-center p-4 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
+        <AnimatedBackground isDark={isDark} />
+        <DarkModeToggle isDark={isDark} toggle={toggleDarkMode} />
+        
+        <GlassCard className="w-full max-w-sm p-6 text-center" isDark={isDark}>
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-rose-500/20 flex items-center justify-center">
+            <Book className="w-8 h-8 text-rose-500" />
+          </div>
+          
+          <h2 className="text-xl font-semibold mb-2 text-rose-500">Quiz Not Found</h2>
+          <p className={`text-sm mb-6 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+           The quiz you're looking for doesn't exist or has been removed.
+          </p>
+          
+         
+          <Button onClick={() => navigate("/explore")} className="w-full" isDark={isDark}>
+             Go To Explore page
+          </Button>
+
         </GlassCard>
       </div>
     );
@@ -690,35 +752,34 @@ export default function JoinQuiz() {
               </Button>
             </div>
           </div>
-
-          {/* Trending Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <GlassCard key={i} className="p-4 cursor-pointer hover:scale-[1.02] transition-transform" isDark={isDark}>
+{/* */}
+       
+           <div  onClick={()=>navigate("/explore")}>
+               <GlassCard  className="p-4 cursor-pointer hover:scale-[1.02] transition-transform" isDark={isDark}>
                 <div className="flex items-start justify-between mb-3">
                   <div className={`p-2 rounded-lg ${isDark ? 'bg-orange-500/10' : 'bg-orange-100'}`}>
                     <BookOpen className={`w-4 h-4 ${isDark ? 'text-orange-400' : 'text-orange-600'}`} />
                   </div>
-                  {i <= 2 && (
+                
                     <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-500 text-white text-[10px] font-semibold">
                       <Flame className="w-3 h-3" /> HOT
                     </span>
-                  )}
+                
                 </div>
                 
-                <h3 className="font-semibold text-sm mb-1">JavaScript Basics</h3>
+                <h3 className="font-semibold text-sm mb-1">Explore Quizzes </h3>
                 <p className={`text-xs mb-3 line-clamp-2 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                   Test your knowledge of core concepts
                 </p>
                 
-                <div className={`flex items-center gap-4 text-xs ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
+                {/* <div className={`flex items-center gap-4 text-xs ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
                   <span className="flex items-center gap-1"><Users className="w-3 h-3" /> 1.2k</span>
                   <span className="flex items-center gap-1"><Target className="w-3 h-3" /> 10</span>
                   <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> 5m</span>
-                </div>
+                </div> */}
               </GlassCard>
-            ))}
-          </div>
+           </div>
+         
         </div>
       </div>
     );
@@ -1110,7 +1171,7 @@ export default function JoinQuiz() {
                     Stay
                   </Button>
                   <button
-                    onClick={() => navigate("/join")}
+                    onClick={() => navigate("/join-quiz")}
                     className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-rose-500 hover:bg-rose-600 text-white transition-colors"
                   >
                     Exit
