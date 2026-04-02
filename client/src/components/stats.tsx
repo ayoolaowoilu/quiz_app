@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { fetchRecents, getUserData } from "../lib/auth";
-import { GetQuizesByCreatorId, GetQuizParticipantsHistory, getUserNameById } from "../lib/quiz";
+import { GetQuizesByCreatorId, GetQuizParticipantsHistory} from "../lib/quiz";
 import logo from "../assets/carrot-diet-fruit-svgrepo-com.svg"
-import AdvertModal from "./AdModal";
+
 import {  CircleQuestionMarkIcon } from "lucide-react";
 
 interface RecentQuiz {
@@ -69,10 +69,10 @@ export default function Stats() {
   // Modal states
   const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null)
   const [historyModalOpen, setHistoryModalOpen] = useState(false)
-  const [adModalOpen, setAdModalOpen] = useState(false)
+  
   const [errorModalOpen, setErrorModalOpen] = useState(false)
   const [errorMessage, setErrorMessage] = useState("")
-  const [revealedUsers, setRevealedUsers] = useState<Set<number>>(new Set())
+
   
   const [isDark, setIsDark] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -149,15 +149,6 @@ export default function Stats() {
     setHistoryModalOpen(true)
   }
 
-  const handleRevealUser = (userId: number) => {
-    setAdModalOpen(true)
-    // Simulate ad watching - in real app, this would wait for ad completion
-    setTimeout(() => {
-      setRevealedUsers(prev => new Set([...prev, userId]))
-      setAdModalOpen(false)
-    }, 2000)
-  }
-
   const getQuizSpecificHistory = (quizId: number) => {
     return mySetHistory.filter(h =>Number(h.quiz_id) === quizId)
   }
@@ -227,11 +218,6 @@ export default function Stats() {
     window.location.href = "/login"
   }
 
-  const handleCheckUsername  = async(userId:number) => {
-                                        const userData = await getUserNameById(userId)
-                                      
-                                        return userData ? userData : 'Unknown User'
-                                      }
 
   // Error Stage
   if (stages == 3) {
@@ -759,7 +745,7 @@ export default function Stats() {
                           .sort((a, b) => b.score - a.score)
                           .slice(0, 10)
                           .map((participant, idx) => {
-                            const isRevealed = revealedUsers.has(participant.user_id)
+                     
                             return (
                               <div
                                 key={idx}
@@ -771,15 +757,13 @@ export default function Stats() {
                                   </div>
                                   <div>
                                     <button
-                                      onClick={() => !isRevealed && handleRevealUser(participant.user_id)}
-                                      className={`font-medium transition-all ${isRevealed ? (isDark ? 'text-white' : 'text-slate-900') : 'blur-sm hover:blur-none cursor-pointer'}`}
-                                      title={!isRevealed ? "Watch ad to reveal username" : ""}
+                                     
+                                      className={`font-medium transition-all text-white 'blur-sm hover:blur-none cursor-pointer'}`}
+                                      onClick={() => alert(`User ID: ${participant.user_id}`)}
                                     >
-                                      {isRevealed ? handleCheckUsername(Number(participant.user_id)) : '••••••••'}
+                                      {"User0" + participant.user_id}
                                     </button>
-                                    {!isRevealed && (
-                                      <span className={`text-xs block ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>Hover & click to reveal</span>
-                                    )}
+                                   
                                   </div>
                                 </div>
                                 <div className="text-right">
@@ -801,26 +785,7 @@ export default function Stats() {
         </div>
       )}
 
-      {/* Ad Modal */}
-      {adModalOpen && (
-        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
-          <div className={`relative w-full max-w-md p-8 rounded-3xl border text-center ${isDark ? 'bg-gray-900 border-orange-500/30' : 'bg-white border-orange-200'}`}>
-            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center animate-pulse">
-              <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <h3 className={`text-xl font-bold mb-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>Watch Advertisement</h3>
-            <p className={`mb-6 ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>Watch a short ad to reveal this user's identity</p>
-            <div className="w-full bg-gray-700/30 rounded-full h-2 mb-4">
-              <div className="h-2 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full animate-pulse" style={{ width: '100%' }}></div>
-            </div>
-            <p className={`text-sm ${isDark ? 'text-gray-500' : 'text-slate-400'}`}>Loading ad...</p>
-          </div>
-        </div>
-      )}
+    
 
       {/* Error Modal */}
       {errorModalOpen && (
@@ -857,14 +822,7 @@ export default function Stats() {
         </div>
       )}
 
-    <AdvertModal 
-  isOpen={adModalOpen} 
-  onClose={() => setAdModalOpen(false)}
-  onComplete={() => {
-    // Handle ad completion - reveal last requested user
-    setAdModalOpen(false)
-  }}
-/>
+  
     </div>
   )
 }
