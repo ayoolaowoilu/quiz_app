@@ -229,11 +229,11 @@ export default function JoinQuiz() {
           setIsLoading(true);
           const token = localStorage.getItem("token");
           const userId = localStorage.getItem("id");
-          const isAuthed = !!token && !!userId;
+          const isAuthed =!!token && !!userId;
         
 
           const quizResp = await getQuizById(Number(quiz_id));
-          console.log(quizResp)
+          
           if(!quizResp){
                 setStage(7)
                 return
@@ -265,8 +265,8 @@ export default function JoinQuiz() {
           }
           
           setQuiz(quizResp);
-
-          // ONLY for one-time quizzes: check auth and viewed status
+         
+          
           if (quizResp.isOneTime === 1) {
            
             if (!isAuthed) {
@@ -279,6 +279,7 @@ export default function JoinQuiz() {
             if (token) {
               try {
                 const userResp = await getUserData(token);
+                
                 if (userResp?.viewed?.includes(Number(quiz_id))) {
                   setStage(4)
                   setIsLoading(false);
@@ -359,7 +360,7 @@ export default function JoinQuiz() {
 
   const handleSubmitQuiz = useCallback(async() => {
     if (!quiz) return;
-    
+         setIsLoading(true)
     const timeTaken = quiz.isTimed ? (quiz.duration * 60) - timeRemaining : 0;
     let correctCount = 0;
     
@@ -380,12 +381,34 @@ export default function JoinQuiz() {
     const score = Math.round((correctCount / quiz.questions.length) * 100);
     const passed = score >= Number(quiz.passingScore);
 
+   const token = localStorage.getItem("token");
+       await getUserData(token)
+   const userid = localStorage.getItem("id")
    
-      setIsLoading(true)
-  const userrr=    await updateQuiz({id:quiz_id,failed: !passed ? 1 : 0 , passed:passed ? 1 : 0})
+    if(!token){
+          setIsLoading(true)
+  const userrr =    await updateQuiz({id:quiz_id,failed: !passed ? 1 : 0 , passed:passed ? 1 : 0})
    setIsLoading(false)
    console.log(userrr) 
+    }else{
+          setIsLoading(true)
+  const userrr =  await updateQuiz({
+    id:quiz_id,
+    failed: !passed ? 1 : 0 , 
+    passed:passed ? 1 : 0 ,
+     userId:Number(userid) ,
+     score:score,
+     time_taken:timeTaken,
+     date_taken:Number(Date.now()),
+     passingScore:quiz.passingScore,
+     name:quiz.quiz_name,reward:quiz.reward,creator_id:Number(quiz.creator_id)
+    })
+
+    setIsLoading(false)
+    console.log(userrr)
+    }
     
+
     setQuizResult({ score, correctAnswers: correctCount, totalQuestions: quiz.questions.length, timeTaken, passed });
     setStage(3);
  
@@ -433,7 +456,7 @@ export default function JoinQuiz() {
               <LogIn className="w-4 h-4 mr-2" />
               Sign In
             </Button>
-            <Button variant="ghost" onClick={() => navigate("/join-quiz")} className="w-full" isDark={isDark}>
+            <Button variant="ghost" onClick={() => navigate("/explore")} className="w-full" isDark={isDark}>
               Back to Explore
             </Button>
           </div>
@@ -459,7 +482,7 @@ export default function JoinQuiz() {
             You've already taken this one-time quiz
           </p>
           
-          <Button onClick={() => navigate("/join")} className="w-full" isDark={isDark}>
+          <Button onClick={() => navigate("/explore")} className="w-full" isDark={isDark}>
             Explore Other Quizzes
           </Button>
         </GlassCard>
@@ -1105,7 +1128,7 @@ export default function JoinQuiz() {
          
 
             
-    <div className={`sticky top-0 z-40 space-y-6 backdrop-blur-md ${isDark ? 'bg-slate-950/80 border-slate-800' : 'bg-white/80 border-slate-200'}`}>
+    <div className={`sticky top-0 z-40 space-y-6 backdrop-blur-md p-8 ${isDark ? 'bg-slate-950/80 border-slate-800' : 'bg-white/80 border-slate-200'}`}>
             <div>
                    Q{currentQuestionIndex + 1}:  {currentQuestion.question}
             </div>

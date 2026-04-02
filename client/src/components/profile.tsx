@@ -1,5 +1,6 @@
 import logo from "../assets/carrot-diet-fruit-svgrepo-com.svg"
 import { useState, useEffect, useRef } from "react"
+import { deleteUserData, getUserData, logoutAuth, UpdateUserData } from "../lib/auth";
 
 export default function ProfileSettings() {
 
@@ -21,7 +22,9 @@ export default function ProfileSettings() {
 
   const [username, setUsername] = useState(localStorage.getItem("username") || "")
   const [email, setEmail] = useState(localStorage.getItem("email") || "")
-  const [currentPassword, setCurrentPassword] = useState("")
+  const [oldEmail] = useState(localStorage.getItem("email") || "")
+  const [oldUsername] = useState(localStorage.getItem("username") || "")
+  
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [isUpdating, setIsUpdating] = useState(false)
@@ -78,13 +81,34 @@ export default function ProfileSettings() {
   }
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
-    e.preventDefault()
+  try {
+        e.preventDefault()
     setIsUpdating(true)
     setUpdateStatus('idle')
 
-    
-    await new Promise(resolve => setTimeout(resolve, 1500))
 
+    if(oldEmail == email || oldUsername == username){
+        setUpdateStatus("error")
+        setIsUpdating(false)
+        setStatusMessage("No changes made!")
+        return;
+    }
+    const token = localStorage.getItem("token")
+   await getUserData(token)
+   const id = localStorage.getItem("id")
+    const payload = {
+      type :"EU",
+      email : email,
+      username : username,
+      id:Number(id)
+    }
+  
+      
+
+
+    
+  await UpdateUserData(payload);
+    
    
     localStorage.setItem("username", username)
     localStorage.setItem("email", email)
@@ -93,49 +117,77 @@ export default function ProfileSettings() {
     setUpdateStatus('success')
     setStatusMessage("Profile updated successfully!")
     setTimeout(() => setUpdateStatus('idle'), 3000)
+  } catch (error) {
+      setIsUpdating(false)
+      setUpdateStatus("error")
+      setStatusMessage("Internet Error")
+  }
   }
 
   const handleChangePassword = async (e: React.FormEvent) => {
-    e.preventDefault()
+    try {
+       e.preventDefault()
     setIsUpdating(true)
     setUpdateStatus('idle')
 
     if (newPassword !== confirmPassword) {
       setIsUpdating(false)
       setUpdateStatus('error')
-      setStatusMessage("New passwords don't match!")
+      setStatusMessage("passwords don't match!")
       return
     }
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500))
+       const token = localStorage.getItem("token")
+   await getUserData(token)
+   const id = localStorage.getItem("id")
+    const payload = {
+      type :"P",
+      password:newPassword,
+      id:Number(id)
+    }
+  
+    await UpdateUserData(payload)
 
     setIsUpdating(false)
     setUpdateStatus('success')
     setStatusMessage("Password changed successfully!")
-    setCurrentPassword("")
+  
     setNewPassword("")
     setConfirmPassword("")
     setTimeout(() => setUpdateStatus('idle'), 3000)
+    } catch (error) {
+        setUpdateStatus("error")
+        setStatusMessage("Network Error")
+        setIsUpdating(false)
+        
+    setNewPassword("")
+    setConfirmPassword("")
+    }
   }
 
   const handleDeleteAccount = async () => {
-    if (deleteConfirmation !== "DELETE") {
+    try {
+        if (deleteConfirmation !== "DELETE") {
       setStatusMessage("Please type DELETE to confirm")
       return
     }
 
     setIsDeleting(true)
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000))
+      const token = localStorage.getItem("token")
+   await getUserData(token)
+   const id = localStorage.getItem("id")
+    await deleteUserData(Number(id))
 
-    // Clear all data
-    localStorage.clear()
-    window.location.href = "/"
+    logoutAuth("web")
+    } catch (error) {
+      setShowDeleteModal(false)
+      setStatusMessage("Internet Error")
+      setUpdateStatus("error")
+      setIsDeleting(false)
+    }
   }
 
-  // Redirect if not logged in
   if (!isLoggedIn) {
     window.location.href = "/login"
     return null
@@ -453,19 +505,7 @@ export default function ProfileSettings() {
             </h2>
 
             <form onSubmit={handleChangePassword} className="space-y-5">
-              <div>
-                <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-slate-700'}`}>
-                  Current Password
-                </label>
-                <input
-                  type="password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  required
-                  className={`w-full px-4 py-3 rounded-xl border outline-none transition-all duration-300 focus:ring-2 focus:ring-orange-500/50 ${isDark ? 'bg-gray-900/50 border-orange-500/30 text-white placeholder-gray-500 focus:border-orange-500' : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:border-orange-500'}`}
-                  placeholder="Enter your current password"
-                />
-              </div>
+           
               
               <div className="grid sm:grid-cols-2 gap-5">
                 <div>
@@ -496,14 +536,40 @@ export default function ProfileSettings() {
                 </div>
               </div>
 
+                <div className="flex items-center justify-between pt-4">
+                {updateStatus !== 'idle' && (
+                  <div className={`flex items-center gap-2 text-sm ${updateStatus === 'success' ? (isDark ? 'text-green-400' : 'text-green-600') : (isDark ? 'text-red-400' : 'text-red-600')}`}>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={updateStatus === 'success' ? "M5 13l4 4L19 7" : "M6 18L18 6M6 6l12 12"}></path>
+                    </svg>
+                    {statusMessage}
+                  </div>
+                )}
+
               <div className="pt-4">
                 <button
                   type="submit"
                   disabled={isUpdating}
                   className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 ${isUpdating ? 'opacity-70 cursor-not-allowed' : 'hover:scale-105 hover:shadow-lg'} ${isDark ? 'bg-gradient-to-r from-orange-600 to-orange-500 text-white hover:shadow-[0_0_20px_rgba(249,115,22,0.4)]' : 'bg-slate-900 text-white hover:bg-slate-800'}`}
                 >
-                  {isUpdating ? 'Updating...' : 'Update Password'}
+                       {isUpdating ? (
+                    <>
+                      <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Updating...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                      </svg>
+                      Update Password
+                    </>
+                  )}
                 </button>
+              </div>
               </div>
             </form>
           </div>

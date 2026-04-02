@@ -18,6 +18,8 @@ import {
   Plus,
   Bookmark,
   Clock,
+
+  CircleQuestionMark,
 } from "lucide-react";
 import { fetchRandomQuizzes, fetchSearchByQuery } from "../../lib/quiz";
 
@@ -42,6 +44,7 @@ interface Quiz {
   time_posted: string;
   passingScore: string;
   likes: number;
+  questions?: any[];
 }
 
 
@@ -189,9 +192,9 @@ const QuizCard = ({
                 <Users className="w-3.5 h-3.5" />
                 {formatNumber(quiz.completed)}
               </span>
-              <span className={`flex items-center gap-1 ${isLiked ? 'text-rose-500' : isDark ? 'text-slate-500' : 'text-slate-500'}`}>
-                <Heart className={`w-3.5 h-3.5 ${isLiked ? "fill-current" : ""}`} />
-                {formatNumber(quiz.likes)}
+              <span className={`flex items-center gap-1 ${ isDark ? 'text-slate-500' : 'text-slate-500'}`}>
+                <CircleQuestionMark className={`w-3.5 h-3.5 ${""}`} />
+                {formatNumber(quiz.questions?.length || 0)}
               </span>
             </div>
             <div className="flex items-center gap-2">

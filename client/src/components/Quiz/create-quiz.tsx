@@ -33,6 +33,8 @@ import {
   BarChart3,
   Loader2,
 } from "lucide-react";
+import { getUserData } from "../../lib/auth";
+import { Add_quiz } from "../../lib/quiz";
 
 type QuizType = "TOF" | "MCQ" | "SAQ";
 
@@ -43,22 +45,7 @@ interface Question {
   options?: string[];
 }
 
-interface QuizData {
-  _type: QuizType;
-  quiz_name: string;
-  material: string;
-  isOneTime: number;
-  isTimed: number;
-  duration: number;
-  passingScore: number;
-  reward: number;
-  quiz_tags: string[];
-  questions: {
-    question: string;
-    answer: string;
-    mcqoptions?: Record<string, string>;
-  }[];
-}
+
 
 const AnimatedBackground = ({ isDark }: { isDark: boolean }) => (
   <div className={`fixed inset-0 overflow-hidden pointer-events-none transition-colors duration-500 ${isDark ? 'bg-slate-950' : 'bg-orange-50'}`}>
@@ -304,8 +291,8 @@ export default function CreateQuiz() {
     setCurrentQuestion({ ...currentQuestion, options: newOptions });
   };
 
-  // Build payload strictly following backend interface
-  const buildQuizPayload = (): QuizData => {
+ 
+  const buildQuizPayload = () => {
     const reward = generateReward();
     
     const formattedQuestions = questions.map(q => {
@@ -328,18 +315,26 @@ export default function CreateQuiz() {
       
       return base;
     });
+ const token = localStorage.getItem("token")
+    getUserData(token).catch((error)=>{
+         console.log("Internet error Try again"+error)
+         return
+    })
+const userid = localStorage.getItem("id")
 
     return {
-      _type: quizType,
-      quiz_name: title,
+      type: quizType,
+      name: title,
       material: description,
       isOneTime: isOneTime ? 1 : 0,
       isTimed: isTimed ? 1 : 0,
       duration: isTimed ? duration : 0,
-      passingScore: passingScore,
+      passing_score: passingScore,
       reward: reward,
-      quiz_tags: tags,
+      tags: tags,
       questions: formattedQuestions,
+      time:Date.now(),
+      creator_id:Number(userid)
     };
   };
 
@@ -347,13 +342,13 @@ export default function CreateQuiz() {
     setIsLoading(true);
     const payload = buildQuizPayload();
     
-    console.log("Submitting to backend:", payload);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
+   
+    const resp = await Add_quiz(payload)
+    console.log(resp)
     
-    // Mock response
-    const mockId = Math.floor(Math.random() * 10000) + 1;
+    
+    const mockId = resp.quizId;
     setQuizId(mockId);
     setIsLoading(false);
     setStep(3);
@@ -361,7 +356,7 @@ export default function CreateQuiz() {
 
   const copyQuizLink = () => {
     if (quizId) {
-      navigator.clipboard.writeText(`https://hyperquizzes.com/join?id=${quizId}`);
+      navigator.clipboard.writeText(`https://hyperquizzes.netlify.app/join-quiz?id=${quizId}`);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
@@ -1057,9 +1052,7 @@ export default function CreateQuiz() {
                   <p className={`text-sm font-semibold ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>
                     Reward: {generateReward()} points
                   </p>
-                  <p className={`text-xs ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
-                    Randomly generated for one-time quiz
-                  </p>
+                
                 </div>
               )}
 
@@ -1071,7 +1064,7 @@ export default function CreateQuiz() {
                   <code className={`flex-1 px-3 py-2 rounded-lg text-sm font-mono break-all ${
                     isDark ? 'bg-slate-950 text-orange-400' : 'bg-white text-orange-600'
                   }`}>
-                    hyperquizzes.com/join?id={quizId}
+                    hyperquizzes.netlify.app/join-quiz?id={quizId}
                   </code>
                   <Button onClick={copyQuizLink} variant="secondary" className="shrink-0" isDark={isDark}>
                     {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}

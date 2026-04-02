@@ -175,10 +175,7 @@ const checkUsername = async(id:any,username:string):Promise<any> =>{
 
 // Logout
 const logoutAuth = (type:string) => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('username');
-  localStorage.removeItem("id");
-  localStorage.removeItem("email");
+  localStorage.clear()
    if(type === "App"){
        window.location.href = '/login?appauth=true';
    }else if(type === "AppReg"){
@@ -207,14 +204,59 @@ const isAuthenticated = () => {
           }
       }
 
+    type UpdateData = {
+          type:string,
+          password?:string
+          email?:string,
+          username?:string,
+          id:number
+    } 
 
+ const UpdateUserData = async(data:UpdateData) =>{
+      try {
+           const resp = await fetch(`${API_URL}/auth/editdata`,{
+              method:"POST",
+              headers:{"Content-Type":"application/json"},
+              body:JSON.stringify(data)
+           })
+
+           const dataa = resp.json()
+           return dataa;
+      } catch (error) {
+        console.log(error)
+      }
+ }
+
+ const deleteUserData = async(id:number)=>{
+        const resp = await fetch(`${API_URL}/auth/delete`,{
+              method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({id:id})
+        })
+
+        return await resp.json();
+ }
+
+const getOtherPlayerDataById = async(id:number)=>{
+     try {
+        const resp = await fetch(`${API_URL}/players/get/${id}`)
+        return await resp.json()
+     } catch (error) {
+      throw new Error("Error Fetching data")
+     }
+}
 export { 
   loginAuth, 
   getUserData, 
   registerAuth, 
   logoutAuth,
   isAuthenticated,
-  checkUsername,fetchRecents,
+  checkUsername,
+  fetchRecents,
+  UpdateUserData,
+  deleteUserData,
+  getOtherPlayerDataById,
+  type UpdateData,
   type UserDetails,
   type AuthResponse 
 };
