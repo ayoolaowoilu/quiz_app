@@ -129,28 +129,26 @@ const fetchSearchByQuery = async (query:string) => {
                 try {
                     const resp = await fetch(`${API_URL}/players/get/${id}`)
                     const data = await resp.json();
-                    console.log(data)
+                   
                     return data.username;
                 } catch (error) {
                     throw new Error("Error fetching user name");
                 }
         }
 
-        //followUser, unfollowUser, checkIfFollowing
+        // userId, followedId 
 
         const followUser = async(followerId:number, followingId:number)=>{
              console.log(followerId, followingId)
-              
-        }
-
-        const unfollowUser = async(followerId:number, followingId:number)=>{
-            console.log(followerId, followingId)
-        }
-
-        const checkIfFollowing = async(followerId:number, followingId:number)=>{
-            console.log(followerId, followingId)
-     return false;
+             const resp = await fetch(`${API_URL}/players/follow`,{
+                  method:"POST",
+                  headers:{"Content-Type":"application/json"},
+                  body:JSON.stringify({userId:followerId, followedId:followingId})
+             })
+              return await resp.json();
         }
 
 
-  export { getQuizById,updateQuiz,fetchRandomQuizzes , fetchSearchByQuery , Add_quiz , GetQuizesByCreatorId , GetQuizParticipantsHistory , getUserNameById ,followUser, unfollowUser, checkIfFollowing}
+      
+
+  export { getQuizById,updateQuiz,fetchRandomQuizzes , fetchSearchByQuery , Add_quiz , GetQuizesByCreatorId , GetQuizParticipantsHistory , getUserNameById ,followUser}

@@ -18,6 +18,7 @@ import Stats from './components/stats'
 import JoinQuiz from './components/Quiz/join-quiz'
 import CreateQuiz from './components/Quiz/create-quiz'
 import Explore from './components/Quiz/explore'
+import PlayerInfo from './components/PlayerInfo'
 
 
 
@@ -44,6 +45,7 @@ function App() {
      <Route path="/stats" element={<Stats />} />
      <Route path='/explore' element={<Explore />} />
      <Route path='/join-quiz' element={<JoinQuiz />} />
+     <Route path='/playerinfo' element={<PlayerInfo />} />
      <Route element={<Auth />} >
      <Route path="/home" element={<Home />} />
      <Route path='/profile' element={<ProfileSettings />} />

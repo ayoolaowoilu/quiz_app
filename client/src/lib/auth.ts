@@ -239,7 +239,7 @@ const isAuthenticated = () => {
 
 const getOtherPlayerDataById = async(id:number)=>{
      try {
-        const resp = await fetch(`${API_URL}/players/get/${id}`)
+        const resp = await fetch(`${API_URL}/players/full/${id}`)
         return await resp.json()
      } catch (error) {
       throw new Error("Error Fetching data")

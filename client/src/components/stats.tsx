@@ -525,7 +525,7 @@ export default function Stats() {
               color: 'from-green-500 to-green-600'
             },
             { 
-              label: 'Total Participants', 
+              label: 'Total Verified Participants', 
               value: stats.totalParticipants, 
               icon: '👥',
               color: 'from-purple-500 to-purple-600'

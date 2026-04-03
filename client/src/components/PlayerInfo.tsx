@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react"
-import {followUser, unfollowUser, checkIfFollowing } from "../lib/quiz";
+import {followUser} from "../lib/quiz";
 import { useSearchParams } from "react-router-dom";
-import { getOtherPlayerDataById } from "../lib/auth";
+import { getOtherPlayerDataById, getUserData } from "../lib/auth";
 import { GetQuizesByCreatorId } from "../lib/quiz";
 import logo from "../assets/carrot-diet-fruit-svgrepo-com.svg"
+import { CircleQuestionMark, UsersRoundIcon } from "lucide-react";
 
 
 
@@ -62,11 +63,12 @@ export default function PlayerInfo(){
         return false;
       })
 
-      setScrolled(window.scrollY > 20)
+      
     
     // Follow state
     const [isFollowing, setIsFollowing] = useState(false)
     const [followLoading, setFollowLoading] = useState(false)
+    const [userFollowsyou,setUserFollowsYou] = useState(false)
     const currentUserId = localStorage.getItem("id")
 
         const userId = localStorage.getItem("id")
@@ -86,8 +88,16 @@ export default function PlayerInfo(){
         try {
             setIsLoading(1)
             const resp = await getOtherPlayerDataById(Number(id))
+            const token = localStorage.getItem("token")
+            await getUserData(token)
+      const idd= localStorage.getItem("id")
+        console.log(resp)
+            resp.followers?.find(((foid:any) => foid == idd)) && setIsFollowing(true)
+            resp.following?.find(((foid:any) => foid == idd)) && setUserFollowsYou(true)
+
+           
             setPlayerData(resp)
-            setIsLoading(3)
+            setIsLoading(2)
 
 
         } catch (error) {
@@ -110,43 +120,33 @@ export default function PlayerInfo(){
     }
     
     // Check follow status
-    const checkFollowStatus = async () => {
-        if (!currentUserId || !id || isOwnProfile) return
-        try {
-            const status = await checkIfFollowing(Number(currentUserId), Number(id))
-            setIsFollowing(status)
-        } catch (error) {
-            console.log(error)
-        }
-    }
+  
     
     // Handle follow/unfollow
     const handleFollowToggle = async () => {
         if (!currentUserId || !id || followLoading) return
         
         setFollowLoading(true)
+        if(isFollowing) return
         try {
-            if (isFollowing) {
-                await unfollowUser(Number(currentUserId), Number(id))
-                setIsFollowing(false)
-                setPlayerData(prev => prev ? {
-                    ...prev,
-                    followers: prev.followers ? prev.followers.filter(f => f !== Number(currentUserId)) : []
-                } : prev)
-            } else {
+          
                 await followUser(Number(currentUserId), Number(id))
                 setIsFollowing(true)
                 setPlayerData(prev => prev ? {
                     ...prev,
                     followers: prev.followers ? [...prev.followers, Number(currentUserId)] : [Number(currentUserId)]
                 } : prev)
-            }
+
+              
+            
         } catch (error) {
             console.log(error)
         } finally {
             setFollowLoading(false)
         }
     }
+
+
 
 
     
@@ -160,12 +160,20 @@ export default function PlayerInfo(){
 
     },[])
     useEffect(()=>{
-        fetchUserQuiz()
+        if(isLoading == 2){
+             fetchUserQuiz()
+        }
     },[isLoading])
     
-    useEffect(()=>{
-        checkFollowStatus()
-    },[id, currentUserId])
+
+     useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20)
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
 
 
     useEffect(() => {
@@ -198,16 +206,23 @@ export default function PlayerInfo(){
     localStorage.removeItem("id")
     window.location.href = "/login"
   }
+
+  
     return (
         <>
-                     return (    <div className={`min-h-screen relative overflow-hidden transition-colors duration-500 ${isDark ? 'bg-black' : 'bg-gradient-to-br from-orange-50 via-white to-amber-50'}`}>
-      {/* Animated Background Effects */}
+                       <div className={`min-h-screen relative overflow-hidden transition-colors duration-500 ${isDark ? 'bg-[#0f0f0f]' : 'bg-[#f8f9fa]'}`}>
+      {/* Subtle Background - Professional & Mature */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className={`absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full blur-[120px] animate-pulse transition-colors duration-700 ${isDark ? 'bg-orange-600/20' : 'bg-orange-300/30'}`}></div>
-        <div className={`absolute -bottom-40 -left-20 w-[500px] h-[500px] rounded-full blur-[100px] animate-pulse delay-1000 transition-colors duration-700 ${isDark ? 'bg-orange-500/10' : 'bg-amber-300/30'}`}></div>
-        
-        {isDark && (
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(249,115,22,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(249,115,22,0.03)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
+        {isDark ? (
+          <>
+            <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-orange-600/5 rounded-full blur-[120px]"></div>
+            <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-orange-500/3 rounded-full blur-[100px]"></div>
+          </>
+        ) : (
+          <>
+            <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-orange-200/30 rounded-full blur-[120px]"></div>
+            <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-amber-100/40 rounded-full blur-[100px]"></div>
+          </>
         )}
       </div>
 
@@ -401,250 +416,341 @@ export default function PlayerInfo(){
       <div className="h-16"></div>
 
 
-      <main className="relative z-10 mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 py-8">
-        {/* Profile Header Section */}
-        <div className={`rounded-3xl border backdrop-blur-xl p-8 mb-8 transition-all duration-500 ${isDark ? 'bg-black/40 border-orange-500/20' : 'bg-white/80 border-orange-200'}`}>
+      <main className="relative z-10 mx-auto max-w-3xl px-0 sm:px-4 py-4">
+        {/* Compact Profile Header - TikTok Style */}
+        <div className={`px-4 py-5 border-b ${isDark ? 'border-white/10' : 'border-black/5'}`}>
           {isLoading === 1 ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+            <div className="flex items-center justify-center py-8">
+              <div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
             </div>
           ) : PlayerData ? (
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-              {/* Avatar */}
-              <div className="relative">
-                <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-3xl font-bold shadow-xl shadow-orange-500/30">
+            <div className="flex items-center gap-4">
+              {/* Compact Avatar */}
+              <div className="relative flex-shrink-0">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-2xl font-bold shadow-lg">
                   {(PlayerData.username || `User${PlayerData.id}`).charAt(0).toUpperCase()}
                 </div>
-                <div className={`absolute -bottom-2 -right-2 px-3 py-1 rounded-full text-xs font-bold border backdrop-blur-md ${isDark ? 'bg-orange-500/20 border-orange-500/30 text-orange-400' : 'bg-orange-100 border-orange-200 text-orange-600'}`}>
-                  {PlayerData.points?.toLocaleString() || 0} pts
-                </div>
+                {Number(PlayerData.points) > 0 && (
+                  <div className={`absolute -bottom-1 -right-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${isDark ? 'bg-orange-500 text-white border-orange-400' : 'bg-orange-500 text-white border-white'}`}>
+                    {PlayerData.points?.toLocaleString()}
+                  </div>
+                )}
               </div>
               
-              {/* User Info */}
+              {/* Compact User Info */}
               <div className="flex-1 min-w-0">
-                <h1 className={`text-2xl sm:text-3xl font-bold mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                  {PlayerData.username ? `@${PlayerData.username}` : `User${PlayerData.id}`}
+                <h1 className={`text-lg font-bold truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                  {PlayerData.username || `User${PlayerData.id}`}
                 </h1>
-                <p className={`text-sm mb-3 ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>
+                <p className={`text-xs mb-2 truncate ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>
                   {PlayerData.email || 'No email provided'}
                 </p>
                 
-                {/* Stats Row */}
-                <div className="flex items-center gap-6 text-sm">
-                  <div className="flex items-center gap-2">
+                {/* Compact Stats */}
+                <div className="flex items-center gap-4 text-xs">
+                  <div className="flex items-center gap-1">
                     <span className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
                       {PlayerData.followers?.length || 0}
                     </span>
-                    <span className={isDark ? 'text-gray-400' : 'text-slate-500'}>followers</span>
+                    <span className={isDark ? 'text-gray-500' : 'text-slate-400'}>Followers</span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
                     <span className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
                       {PlayerData.following?.length || 0}
                     </span>
-                    <span className={isDark ? 'text-gray-400' : 'text-slate-500'}>following</span>
+                    <span className={isDark ? 'text-gray-500' : 'text-slate-400'}>Following</span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
                     <span className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
                       {playerQuizes.length}
                     </span>
-                    <span className={isDark ? 'text-gray-400' : 'text-slate-500'}>quizzes</span>
+                    <span className={isDark ? 'text-gray-500' : 'text-slate-400'}>Quizzes</span>
                   </div>
+
+                   
+                    {userFollowsyou && (
+      <span className={`
+        px-2 py-0.5 rounded-full text-[10px] font-medium
+        ${isDark ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' : 'bg-orange-100 text-orange-700 border border-orange-200'}
+      `}>
+        Follows You
+      </span>
+    )}
+             
                 </div>
+
               </div>
               
-              {/* Follow Button - Professional & Small */}
+              {/* Compact Follow Button */}
               {!isOwnProfile && isLoggedIn && (
-                <div className="sm:ml-auto">
+                <div className="flex-shrink-0">
                   <button
                     onClick={handleFollowToggle}
                     disabled={followLoading}
                     className={`
-                      group relative overflow-hidden px-5 py-2.5 rounded-xl text-sm font-semibold
-                      transition-all duration-300 ease-out transform
+                      px-5 py-1.5 rounded-full text-xs font-semibold
+                      transition-all duration-200 active:scale-95
                       ${isFollowing 
                         ? (isDark 
-                            ? 'bg-transparent border border-orange-500/50 text-orange-400 hover:bg-orange-500/10 hover:border-orange-500' 
-                            : 'bg-transparent border border-orange-300 text-orange-600 hover:bg-orange-50 hover:border-orange-400')
+                            ? 'bg-transparent border border-white/30 text-white hover:border-white/60' 
+                            : 'bg-transparent border border-slate-300 text-slate-700 hover:border-slate-400')
                         : (isDark 
-                            ? 'bg-gradient-to-r from-orange-600 to-orange-500 text-white border border-transparent hover:shadow-lg hover:shadow-orange-500/30 hover:scale-105' 
-                            : 'bg-gradient-to-r from-orange-500 to-orange-600 text-white border border-transparent hover:shadow-lg hover:shadow-orange-500/30 hover:scale-105')
+                            ? 'bg-white text-black hover:bg-white/90' 
+                            : 'bg-slate-900 text-white hover:bg-slate-800')
                       }
-                      disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none
-                      active:scale-95
+                      disabled:opacity-50 disabled:cursor-not-allowed
                     `}
                   >
-                    <span className="relative z-10 flex items-center gap-2">
-                      {followLoading ? (
-                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                    {followLoading ? (
+                      <span className="flex items-center gap-1">
+                        <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                      ) : isFollowing ? (
-                        <>
-                          <svg className="w-4 h-4 transition-transform duration-300 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                          </svg>
-                          <span className="group-hover:hidden">Following</span>
-                          <span className="hidden group-hover:inline">Unfollow</span>
-                        </>
-                      ) : (
-                        <>
-                          <svg className="w-4 h-4 transition-transform duration-300 group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                          </svg>
-                          Follow
-                        </>
-                      )}
-                    </span>
-                    
-                    {/* Hover glow effect */}
-                    {!isFollowing && (
-                      <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                      </span>
+                    ) : isFollowing ? (
+                      'Following'
+                    ) : (
+                      'Follow'
                     )}
                   </button>
                 </div>
               )}
             </div>
           ) : (
-            <div className={`text-center py-12 ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>
+            <div className={`text-center py-8 text-sm ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>
               User not found
             </div>
           )}
         </div>
         
-        {/* Quizzes Grid Section */}
-        {isLoading === 2 ? (
+       {isLoading === 2 ? (
           <div className="flex items-center justify-center py-20">
-            <div className="w-10 h-10 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-8 h-8 border-3 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
           </div>
         ) : playerQuizes.length > 0 ? (
-          <div>
-            <h2 className={`text-xl font-bold mb-6 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-              Created Quizzes
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {playerQuizes.map((quiz) => (
+          <div className="px-2 py-4">
+            {/* Section Header */}
+            <div className="flex items-center justify-between mb-4 px-2">
+              <h2 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                Created Quizzes
+              </h2>
+              <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>
+                {playerQuizes.length} total
+              </span>
+            </div>
+            
+            {/* Grid Container - 2 cols mobile, 2 cols sm, 3 cols lg */}
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
+              {playerQuizes.map((quiz, index) => (
                 <a
                   key={quiz.id}
-                  href={`/quiz/${quiz.id}`}
+                  href={`/join-quiz?id=${quiz.id}`}
                   className={`
-                    group relative rounded-2xl p-6 border backdrop-blur-sm
-                    transition-all duration-300 hover:-translate-y-1 hover:shadow-xl
+                    group relative flex flex-col
+                    rounded-xl sm:rounded-2xl overflow-hidden
+                    transition-all duration-300 ease-out
+                    hover:scale-[1.02] hover:-translate-y-1
                     ${isDark 
-                      ? 'bg-black/30 border-orange-500/20 hover:border-orange-500/40 hover:shadow-orange-500/10' 
-                      : 'bg-white/60 border-orange-100 hover:border-orange-300 hover:shadow-orange-500/10'
+                      ? 'bg-white/[0.03] border border-white/10 hover:border-orange-500/30 hover:bg-white/[0.05]' 
+                      : 'bg-white border border-slate-200 hover:border-orange-300 hover:shadow-lg hover:shadow-orange-500/10'
                     }
                   `}
+                  style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  {/* Quiz Type Badge */}
-                  <div className="flex items-center justify-between mb-4">
-                    <span className={`
-                      px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider
-                      ${quiz._type === 'MCQ' 
-                        ? (isDark ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-blue-100 text-blue-600 border border-blue-200')
-                        : quiz._type === 'TOF'
-                        ? (isDark ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' : 'bg-purple-100 text-purple-600 border border-purple-200')
-                        : (isDark ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-green-100 text-green-600 border border-green-200')
-                      }
-                    `}>
-                      {quiz._type}
-                    </span>
-                    {quiz.isTimed === 1 && (
-                      <span className={`
-                        flex items-center gap-1 text-xs
-                        ${isDark ? 'text-orange-400' : 'text-orange-600'}
-                      `}>
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        {quiz.duration}m
-                      </span>
-                    )}
-                  </div>
-                  
-                  {/* Quiz Title */}
-                  <h3 className={`
-                    text-lg font-bold mb-2 line-clamp-2
-                    ${isDark ? 'text-white group-hover:text-orange-400' : 'text-slate-900 group-hover:text-orange-600'}
-                    transition-colors duration-300
-                  `}>
-                    {quiz.quiz_name}
-                  </h3>
-                  
-                  {/* Quiz Stats */}
-                  <div className="flex items-center gap-4 text-sm mt-4">
-                    <div className={`flex items-center gap-1 ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                      </svg>
-                      {quiz.views || 0}
-                    </div>
-                    <div className={`flex items-center gap-1 ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                      </svg>
-                      {quiz.likes || 0}
-                    </div>
-                    <div className={`flex items-center gap-1 ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
-                      </svg>
-                      {quiz.saves || 0}
-                    </div>
-                  </div>
-                  
-                  {/* Reward Badge */}
-                  {quiz.reward > 0 && (
-                    <div className={`
-                      absolute top-4 right-4 px-2 py-1 rounded-lg text-xs font-bold
-                      ${isDark ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' : 'bg-yellow-100 text-yellow-700 border border-yellow-200'}
-                    `}>
-                      +{quiz.reward} pts
-                    </div>
-                  )}
-                  
-                  {/* Arrow indicator */}
+                  {/* Card Header - Color coded by type */}
                   <div className={`
-                    absolute bottom-4 right-4 opacity-0 group-hover:opacity-100
-                    transition-all duration-300 transform translate-x-2 group-hover:translate-x-0
-                    ${isDark ? 'text-orange-400' : 'text-orange-600'}
+                    h-1.5 sm:h-2 w-full
+                    ${quiz._type === 'MCQ' 
+                      ? 'bg-gradient-to-r from-blue-500 to-blue-600' 
+                      : quiz._type === 'TOF'
+                      ? 'bg-gradient-to-r from-purple-500 to-purple-600'
+                      : 'bg-gradient-to-r from-emerald-500 to-emerald-600'
+                    }
+                  `}></div>
+                  
+                  {/* Card Content */}
+                  <div className="p-2.5 sm:p-4 flex flex-col gap-2 sm:gap-3">
+                    {/* Top Row: Type Badge & Reward */}
+                    <div className="flex items-center justify-between gap-1">
+                      <span className={`
+                        px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-md sm:rounded-lg text-[9px] sm:text-[11px] font-bold uppercase tracking-wider
+                        ${quiz._type === 'MCQ' 
+                          ? (isDark ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-100 text-blue-700')
+                          : quiz._type === 'TOF'
+                          ? (isDark ? 'bg-purple-500/20 text-purple-400' : 'bg-purple-100 text-purple-700')
+                          : (isDark ? 'bg-emerald-500/20 text-emerald-400' : 'bg-emerald-100 text-emerald-700')
+                        }
+                      `}>
+                        {quiz._type}
+                      </span>
+                      
+                      {quiz.reward > 0 && (
+                        <span className={`
+                          flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg text-[9px] sm:text-[11px] font-bold
+                          ${isDark ? 'bg-orange-500/20 text-orange-400' : 'bg-orange-100 text-orange-700'}
+                        `}>
+                          <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                          </svg>
+                          +{quiz.reward}
+                        </span>
+                      )}
+                    </div>
+                    
+                    {/* Title */}
+                    <h3 className={`
+                      font-bold text-xs sm:text-base leading-tight line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem]
+                      transition-colors duration-200
+                      ${isDark ? 'text-white group-hover:text-orange-400' : 'text-slate-900 group-hover:text-orange-600'}
+                    `}>
+                      {quiz.quiz_name}
+                    </h3>
+                    
+                    {/* Material Preview - Hidden on mobile */}
+                    {quiz.material && (
+                      <p className={`
+                        hidden sm:block text-xs line-clamp-2 leading-relaxed
+                        ${isDark ? 'text-gray-400' : 'text-slate-500'}
+                      `}>
+                        {quiz.material}
+                      </p>
+                    )}
+                    
+                    {/* Stats Row */}
+                    <div className={`
+                      flex items-center gap-2 sm:gap-4 pt-2 sm:pt-3 mt-auto
+                      border-t ${isDark ? 'border-white/5' : 'border-slate-100'}
+                    `}>
+                      <div className="flex items-center gap-1 sm:gap-1.5">
+                        <CircleQuestionMark className={`w-3 h-3 sm:w-4 sm:h-4 ${isDark ? 'text-gray-500' : 'text-slate-400'}`} />
+                        <span className={`text-[10px] sm:text-xs font-medium ${isDark ? 'text-gray-300' : 'text-slate-600'}`}>
+                          {quiz.questions?.length || 0}
+                        </span>
+                      </div>
+                      
+                      {quiz.isTimed === 1 && (
+                        <div className="flex items-center gap-1 sm:gap-1.5">
+                          <svg className={`w-3 h-3 sm:w-4 sm:h-4 ${isDark ? 'text-gray-500' : 'text-slate-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                          </svg>
+                          <span className={`text-[10px] sm:text-xs font-medium ${isDark ? 'text-gray-300' : 'text-slate-600'}`}>
+                            {quiz.duration}m
+                          </span>
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center gap-1 sm:gap-1.5 ml-auto">
+                        <UsersRoundIcon className={`w-3 h-3 sm:w-4 sm:h-4 ${isDark ? 'text-gray-500' : 'text-slate-400'}`} />
+                        <span className={`text-[10px] sm:text-xs font-medium ${isDark ? 'text-gray-300' : 'text-slate-600'}`}>
+                          {quiz.completed || 0}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Hover Action Overlay */}
+                  <div className={`
+                    absolute inset-0 flex items-center justify-center gap-2
+                    opacity-0 group-hover:opacity-100
+                    transition-all duration-300
+                    ${isDark ? 'bg-black/60' : 'bg-slate-900/60'}
+                    backdrop-blur-sm
                   `}>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
-                    </svg>
+                    <span className={`
+                      px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold
+                      transform translate-y-2 group-hover:translate-y-0
+                      transition-transform duration-300 delay-75
+                      ${isDark ? 'bg-white text-black' : 'bg-white text-slate-900'}
+                    `}>
+                      Take Quiz
+                    </span>
                   </div>
                 </a>
               ))}
             </div>
           </div>
         ) : (
-          <div className={`
-            rounded-2xl border backdrop-blur-sm p-12 text-center
-            ${isDark ? 'bg-black/30 border-orange-500/20' : 'bg-white/60 border-orange-100'}
-          `}>
+          <div className="flex flex-col items-center justify-center py-20 px-4">
             <div className={`
-              w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center
-              ${isDark ? 'bg-orange-500/10' : 'bg-orange-100'}
+              w-16 h-16 mb-4 rounded-2xl flex items-center justify-center
+              ${isDark ? 'bg-white/5' : 'bg-slate-100'}
             `}>
-              <svg className={`w-8 h-8 ${isDark ? 'text-orange-400' : 'text-orange-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+              <svg className={`w-8 h-8 ${isDark ? 'text-gray-500' : 'text-slate-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
               </svg>
             </div>
-            <h3 className={`text-lg font-bold mb-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+            <h3 className={`text-base font-semibold mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
               No quizzes yet
             </h3>
-            <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>
+            <p className={`text-sm ${isDark ? 'text-gray-500' : 'text-slate-400'}`}>
               This user hasn't created any quizzes yet.
             </p>
           </div>
         )}
+
+
       </main>
-      
+
+
+      <div className="h-[450px] md:h-32" ></div>
+        <footer className={`relative z-10 border-t transition-colors duration-500 ${isDark ? 'bg-black/80 border-orange-500/20' : 'bg-white/80 border-orange-100'}`}>
+        <div className="mx-auto max-w-screen-xl px-4 py-12 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-3">
+              <div className={`p-2 rounded-xl border ${isDark ? 'bg-gradient-to-br from-orange-500/20 to-orange-600/10 border-orange-500/30' : 'bg-orange-100 border-orange-200'}`}>
+                <img src={logo} alt="Hyper Quizes" className="w-8 h-8" />
+              </div>
+              <div>
+                <span className={`font-bold transition-colors duration-300 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                  Hyper<span className="text-orange-500">Quizzes</span>
+                </span>
+                <p className={`text-xs transition-colors duration-300 ${isDark ? 'text-gray-500' : 'text-slate-500'}`}>
+                  © 2024 All rights reserved.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap justify-center gap-6 text-sm">
+              {['About', 'Privacy', 'Terms', 'Contact'].map((link) => (
+                <a
+                  key={link}
+                  href={`/${link.toLowerCase()}`}
+                  className={`transition-colors duration-300 ${isDark ? 'text-gray-400 hover:text-orange-400' : 'text-slate-600 hover:text-orange-600'}`}
+                >
+                  {link}
+                </a>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-4">
+              {[
+                { name: 'Twitter', icon: 'M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84' },
+                { name: 'GitHub', icon: 'M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z' }
+              ].map((social) => (
+                <a
+                  key={social.name}
+                  href="#"
+                  className={`p-2 rounded-lg transition-all duration-300 hover:scale-110 border ${isDark ? 'text-gray-400 hover:text-orange-400 hover:bg-orange-500/10 border-orange-500/20' : 'text-slate-600 hover:text-orange-500 hover:bg-orange-50 border-slate-200'}`}
+                >
+                  <span className="sr-only">{social.name}</span>
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d={social.icon} />
+                  </svg>
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+      </footer>
  
-      
+     
       </div>
-      )
+      
+
+      
          </>
     )
 }
+
+

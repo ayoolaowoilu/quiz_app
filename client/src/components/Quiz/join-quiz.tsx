@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback ,useRef} from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { getQuizById, updateQuiz } from "../../lib/quiz";
+import { getQuizById, getUserNameById, updateQuiz } from "../../lib/quiz";
 import logo from "../../assets/carrot-diet-fruit-svgrepo-com.svg"
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -177,6 +177,7 @@ export default function JoinQuiz() {
 
   const displayName = username ? `@${username}` : `User${userId}`
   const avatarLetter = (username || `User${userId}`).charAt(0).toUpperCase()
+  const [creatorName , setCreatorName] = useState<string>("")
  
 
    const toggleTheme = () => {
@@ -265,6 +266,8 @@ export default function JoinQuiz() {
           }
           
           setQuiz(quizResp);
+          const creatorName = await getUserNameById(Number(quizResp.creator_id));
+          setCreatorName(creatorName)
          
           
           if (quizResp.isOneTime === 1) {
@@ -433,6 +436,9 @@ export default function JoinQuiz() {
       default: return { label: "Quiz", icon: BookOpen, color: isDark ? "text-orange-400" : "text-orange-600", bg: isDark ? "bg-orange-500/10" : "bg-orange-100" };
     }
   };
+
+  
+  
 
   
   if (stage === 5) {
@@ -865,8 +871,8 @@ export default function JoinQuiz() {
             <p className={`text-sm mb-4 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>{quiz.material}</p>
             
             <div className="flex items-center gap-3 text-xs">
-              <span className={`px-2.5 py-1 rounded-md ${isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700'}`}>
-                @{quiz.creator_id}
+              <span onClick={()=> window.location.href = `/playerinfo?id=${quiz.creator_id}`} className={`cursor-pointer px-2.5 py-1 rounded-md ${isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700'}`}>
+                @{creatorName || "User0" + quiz.creator_id}
               </span>
               <span className={isDark ? 'text-slate-500' : 'text-slate-500'}>
                 {new Date(Number(quiz.time_posted)).toLocaleDateString()}
