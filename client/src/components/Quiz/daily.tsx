@@ -540,7 +540,7 @@ export default function DailyQuiz() {
                 {[
                   { label: "Questions", value: quiz.questions?.length, icon: "question" },
                   { label: "Duration", value: `${quiz.duration} min`, icon: "time" },
-                  { label: "Reward", value: `${quiz.reward} pts`, icon: "gift" },
+                
                   { label: "Passing", value: `${quiz.passingScore}%`, icon: "✅" },
                 ].map((stat, idx) => (
                   <motion.div
@@ -608,7 +608,7 @@ export default function DailyQuiz() {
                 </motion.button>
                 
                 <p className={`mt-4 text-sm ${isDark ? "text-white/50" : "text-slate-400"}`}>
-                  {quiz.players?.length} players have already taken this quiz
+                {quiz?.players?.length > 10 ? (<p> {quiz.players?.length} players have already taken this quiz</p>) : null}
                 </p>
               </motion.div>
             </div>
