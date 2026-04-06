@@ -795,7 +795,7 @@ return (
             {/* Quizzes Grid - Using Quiz_loaded interface */}
             {!loading && categoryQuiz.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {categoryQuiz.map((quiz: Quiz_loaded, index: number) => (
+                {categoryQuiz.map((quiz: Quiz_loaded) => (
                   <div 
                     key={quiz.id}
                     className={`group p-6 rounded-2xl border transition-all duration-500 hover:scale-105 hover:shadow-2xl ${isDark ? 'bg-black/40 border-orange-500/30 hover:border-orange-500/50' : 'bg-white border-orange-200 hover:border-orange-400'} backdrop-blur-sm`}
