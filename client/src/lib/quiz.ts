@@ -148,7 +148,47 @@ const fetchSearchByQuery = async (query:string) => {
               return await resp.json();
         }
 
+        const getDaillyQuiz = async(date:string)=>{ 
+              try {
+                    const resp = await fetch(`${API_URL}/quizes/get_daily/${date}`)
 
+                    return await resp.json();
+              } catch (error) {
+                throw new Error("Error fetching daily quiz")
+              }
+        }
+  //id , player_data ,passed ,failed 
+  type daily = {
+       id:string,
+       player_data:any,
+       passed:number,
+       failed:number,
+  }
+        const updateDailyQuiz = async(data:daily)=>{
+               const resp = fetch(`${API_URL}/quizes/update_daily`,{
+                 method:"POST",
+                 headers:{"Content-Type":"application/json"},
+                 body:JSON.stringify(data)
+                 
+               })
+
+               return (await resp).json;
+        }
+
+
+        const fetchCategoryQuiz = async(category:string)=>{
+           try {
+                const resp = fetch(`${API_URL}/quizes/getbytag`,{
+                    method:"POST",
+                    headers:{"Content-Type":"application/json"},
+                    body:JSON.stringify({tag:category})
+               })
+
+              return (await resp).json()
+           } catch (error) {
+              console.log(error)
+           }
+        }
       
 
-  export { getQuizById,updateQuiz,fetchRandomQuizzes , fetchSearchByQuery , Add_quiz , GetQuizesByCreatorId , GetQuizParticipantsHistory , getUserNameById ,followUser}
+  export { getQuizById,updateQuiz,fetchRandomQuizzes , fetchSearchByQuery , Add_quiz , GetQuizesByCreatorId , GetQuizParticipantsHistory , getUserNameById ,followUser ,getDaillyQuiz ,updateDailyQuiz , fetchCategoryQuiz}

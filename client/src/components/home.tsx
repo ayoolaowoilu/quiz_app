@@ -5,6 +5,7 @@ import logo from "../assets/carrot-diet-fruit-svgrepo-com.svg"
 import { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import { logoutAuth } from "../lib/auth"
+import { Book } from "lucide-react"
 
 export default function Home() {
   const navigate = useNavigate()
@@ -23,7 +24,6 @@ export default function Home() {
   const [appDropdownOpen, setAppDropdownOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [activeTab, setActiveTab] = useState('popular');
   const profileRef = useRef<HTMLDivElement>(null);
   const appDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -122,17 +122,13 @@ export default function Home() {
       img: world,
       color: "from-yellow-500 via-orange-500 to-amber-500",
       bgColor: "bg-yellow-500/10",
-      comingSoon: true,
+
       iconBg: "bg-yellow-500"
     }
   ]
   },[]);
 
-  const recentActivity = [
-    { id: 1, type: 'joined', quiz: 'Science Trivia', date: '2 hours ago', score: '85%' },
-    { id: 2, type: 'created', quiz: 'History Basics', date: '1 day ago', participants: 24 },
-    { id: 3, type: 'joined', quiz: 'Math Challenge', date: '2 days ago', score: '92%' },
-  ];
+
 
   const categories = [
     { name: 'Science', count: 1240, icon: '🧬', color: 'from-blue-500 to-cyan-400' },
@@ -433,7 +429,7 @@ export default function Home() {
             <a
               key={index}
               href={card.path}
-              className={`group relative flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 hover:scale-[1.02] hover:shadow-lg ${isDark ? 'bg-black/60 border border-orange-500/20 hover:border-orange-500/40' : 'bg-white border border-orange-100'} ${card.comingSoon ? 'opacity-80' : ''}`}
+              className={`group relative flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 hover:scale-[1.02] hover:shadow-lg ${isDark ? 'bg-black/60 border border-orange-500/20 hover:border-orange-500/40' : 'bg-white border border-orange-100'}`}
             >
               <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-110 ${card.bgColor} border ${isDark ? 'border-orange-500/20' : 'border-orange-100'}`}>
                 <img src={card.img} alt={card.title} className="w-6 h-6" />
@@ -443,11 +439,7 @@ export default function Home() {
                   <h3 className={`text-base font-bold transition-colors duration-300 ${isDark ? 'text-white' : 'text-slate-900'}`}>
                     {card.title}
                   </h3>
-                  {card.comingSoon && (
-                    <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-gradient-to-r from-amber-500 to-orange-500 text-white">
-                      SOON
-                    </span>
-                  )}
+                
                 </div>
                 <p className={`text-xs leading-relaxed transition-colors duration-300 ${isDark ? 'text-gray-400' : 'text-slate-600'}`}>
                   {card.info}
@@ -482,7 +474,16 @@ export default function Home() {
           
           {/* Left Column - Categories & Recent */}
           <div className="lg:col-span-2 space-y-6">
-            
+                  <section className={`p-4 rounded-xl border ${isDark ? 'bg-gradient-to-br from-purple-900/30 to-pink-900/30 border-purple-500/30' : 'bg-gradient-to-br from-purple-100 to-pink-50 border-purple-200'}`}>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-xl">🏆</span>
+                <h3 className={`text-sm font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>Daily Challenge</h3>
+              </div>
+              <p className={`text-xs mb-3 ${isDark ? 'text-gray-300' : 'text-slate-600'}`}>Complete today's quiz to earn 2x points!</p>
+              <button onClick={()=>window.location.href = "/daily"} className={`w-full py-2 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-300`}>
+                Start Challenge
+              </button>
+            </section>
             {/* Categories Grid */}
             <section>
               <div className="flex items-center justify-between mb-4">
@@ -493,12 +494,12 @@ export default function Home() {
                 {categories.map((cat, idx) => (
                   <a
                     key={idx}
-                    href={`/category/${cat.name.toLowerCase()}`}
+                    href={`/category?category=${cat.name.toLowerCase()}`}
                     className={`group p-3 rounded-xl border transition-all duration-300 hover:scale-105 ${isDark ? 'bg-black/40 border-orange-500/20 hover:border-orange-500/40' : 'bg-white border-orange-100 hover:border-orange-300'}`}
                   >
                     <div className="text-2xl mb-1 group-hover:scale-110 transition-transform duration-300">{cat.icon}</div>
                     <h3 className={`text-sm font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>{cat.name}</h3>
-                    <p className={`text-xs ${isDark ? 'text-gray-500' : 'text-slate-500'}`}>{cat.count} quizzes</p>
+            
                     <div className={`mt-2 h-1 rounded-full bg-gradient-to-r ${cat.color} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
                   </a>
                 ))}
@@ -506,132 +507,29 @@ export default function Home() {
             </section>
 
             {/* Recent Activity */}
-            <section>
-              <h2 className={`text-lg font-bold mb-4 ${isDark ? 'text-white' : 'text-slate-900'}`}>Recent Activity</h2>
-              <div className={`rounded-xl border overflow-hidden ${isDark ? 'bg-black/40 border-orange-500/20' : 'bg-white border-orange-100'}`}>
-                {recentActivity.map((activity, idx) => (
-                  <div key={activity.id} className={`flex items-center justify-between p-3 ${idx !== recentActivity.length - 1 ? `border-b ${isDark ? 'border-orange-500/10' : 'border-orange-50'}` : ''}`}>
-                    <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${activity.type === 'joined' ? (isDark ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-600') : (isDark ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-100 text-blue-600')}`}>
-                        {activity.type === 'joined' ? (
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
-                          </svg>
-                        ) : (
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path>
-                          </svg>
-                        )}
-                      </div>
-                      <div>
-                        <p className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>{activity.quiz}</p>
-                        <p className={`text-xs ${isDark ? 'text-gray-500' : 'text-slate-500'}`}>{activity.date}</p>
-                      </div>
-                    </div>
-                    {activity.score ? (
-                      <span className={`px-2 py-1 rounded-lg text-xs font-bold ${isDark ? 'bg-orange-500/20 text-orange-400' : 'bg-orange-100 text-orange-600'}`}>
-                        {activity.score}
-                      </span>
-                    ) : (
-                      <span className={`px-2 py-1 rounded-lg text-xs font-bold ${isDark ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-100 text-blue-600'}`}>
-                        {activity.participants} joined
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </section>
+           
           </div>
 
           {/* Right Column - Trending & Quick Join */}
           <div className="space-y-6">
             
-            {/* Quick Join Input */}
-            <section className={`p-4 rounded-xl border ${isDark ? 'bg-gradient-to-br from-orange-600/20 to-orange-900/20 border-orange-500/30' : 'bg-gradient-to-br from-orange-100 to-amber-50 border-orange-200'}`}>
-              <h3 className={`text-sm font-bold mb-3 ${isDark ? 'text-white' : 'text-slate-900'}`}>Quick Join</h3>
-              <div className="flex gap-2">
-                <input 
-                  type="text" 
-                  placeholder="Enter quiz code"
-                  className={`flex-1 px-3 py-2 rounded-lg text-sm border outline-none transition-all duration-300 ${isDark ? 'bg-black/50 border-orange-500/30 text-white placeholder-gray-500 focus:border-orange-500' : 'bg-white border-orange-200 text-slate-900 placeholder-slate-400 focus:border-orange-400'}`}
-                />
-                <button className={`px-4 py-2 rounded-lg text-sm font-bold text-white bg-gradient-to-r from-orange-500 to-amber-500 hover:shadow-lg hover:shadow-orange-500/30 transition-all duration-300`}>
-                  Go
-                </button>
-              </div>
-            </section>
+       
+   <div className="rounded-sm p-4 text-center bg-white/50 text-black shadow-xl">
+        <p className="text-center flex justify-center space-x-2">
+             
+            <Book />  Review your stats today <Book />
+        </p>
+        <small className="text-gray-300 my-4">View people who took your quiz</small>
 
-            {/* Trending Quizzes */}
-            <section>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>Trending</h2>
-                <div className="flex gap-1">
-                  {['popular', 'new'].map((tab) => (
-                    <button
-                      key={tab}
-                      onClick={() => setActiveTab(tab)}
-                      className={`px-2 py-1 rounded-lg text-xs font-medium transition-all duration-200 ${activeTab === tab ? (isDark ? 'bg-orange-500/20 text-orange-400' : 'bg-orange-100 text-orange-600') : (isDark ? 'text-gray-500 hover:text-gray-300' : 'text-slate-500 hover:text-slate-700')}`}
-                    >
-                      {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="space-y-3">
-                {[
-                  { title: 'Space Exploration', author: '@astrofan', plays: '2.4k', difficulty: 'Medium' },
-                  { title: 'World Capitals', author: '@geographypro', plays: '1.8k', difficulty: 'Easy' },
-                  { title: 'Python Basics', author: '@codemaster', plays: '3.1k', difficulty: 'Hard' },
-                ].map((quiz, idx) => (
-                  <a
-                    key={idx}
-                    href={`/quiz/${idx}`}
-                    className={`block p-3 rounded-xl border transition-all duration-300 hover:scale-[1.02] ${isDark ? 'bg-black/40 border-orange-500/20 hover:border-orange-500/40' : 'bg-white border-orange-100 hover:border-orange-300'}`}
-                  >
-                    <div className="flex items-start justify-between mb-2">
-                      <h4 className={`text-sm font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>{quiz.title}</h4>
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${quiz.difficulty === 'Easy' ? (isDark ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-600') : quiz.difficulty === 'Medium' ? (isDark ? 'bg-yellow-500/20 text-yellow-400' : 'bg-yellow-100 text-yellow-600') : (isDark ? 'bg-red-500/20 text-red-400' : 'bg-red-100 text-red-600')}`}>
-                        {quiz.difficulty}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-xs">
-                      <span className={isDark ? 'text-gray-400' : 'text-slate-500'}>{quiz.author}</span>
-                      <span className={isDark ? 'text-orange-400' : 'text-orange-600'}>{quiz.plays} plays</span>
-                    </div>
-                  </a>
-                ))}
-              </div>
-            </section>
+        <button onClick={()=>{window.location.href = "/stats"}} className="p-2 mt-6 w-full bg-blue-700 text-white rounded-sm ">Review Stats</button>
 
+   </div>
             {/* Daily Challenge */}
-            <section className={`p-4 rounded-xl border ${isDark ? 'bg-gradient-to-br from-purple-900/30 to-pink-900/30 border-purple-500/30' : 'bg-gradient-to-br from-purple-100 to-pink-50 border-purple-200'}`}>
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-xl">🏆</span>
-                <h3 className={`text-sm font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>Daily Challenge</h3>
-              </div>
-              <p className={`text-xs mb-3 ${isDark ? 'text-gray-300' : 'text-slate-600'}`}>Complete today's quiz to earn 2x points!</p>
-              <button className={`w-full py-2 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-300`}>
-                Start Challenge
-              </button>
-            </section>
+        
           </div>
         </div>
 
-        {/* Featured Section */}
-        <section className="mt-10">
-          <div className={`relative overflow-hidden rounded-2xl p-6 lg:p-8 border ${isDark ? 'bg-gradient-to-r from-orange-900/40 to-amber-900/40 border-orange-500/30' : 'bg-gradient-to-r from-orange-100 to-amber-50 border-orange-200'}`}>
-            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-4">
-              <div>
-                <h2 className={`text-xl lg:text-2xl font-bold mb-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>Become a Quiz Creator</h2>
-                <p className={`text-sm max-w-md ${isDark ? 'text-gray-300' : 'text-slate-600'}`}>Share your knowledge with thousands of users. Create engaging quizzes and track performance in real-time.</p>
-              </div>
-              <button className={`px-6 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-orange-500 to-amber-500 hover:shadow-xl hover:shadow-orange-500/30 transition-all duration-300 hover:scale-105`}>
-                Apply Now
-              </button>
-            </div>
-            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-orange-400/20 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-          </div>
-        </section>
+      
 
       </main>
 

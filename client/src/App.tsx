@@ -19,6 +19,8 @@ import JoinQuiz from './components/Quiz/join-quiz'
 import CreateQuiz from './components/Quiz/create-quiz'
 import Explore from './components/Quiz/explore'
 import PlayerInfo from './components/PlayerInfo'
+import DailyQuiz from './components/Quiz/daily'
+import Category from './components/categories'
 
 
 
@@ -46,6 +48,8 @@ function App() {
      <Route path='/explore' element={<Explore />} />
      <Route path='/join-quiz' element={<JoinQuiz />} />
      <Route path='/playerinfo' element={<PlayerInfo />} />
+     <Route path='/daily' element={<DailyQuiz />} />
+     <Route path='/category' element={<Category />} />
      <Route element={<Auth />} >
      <Route path="/home" element={<Home />} />
      <Route path='/profile' element={<ProfileSettings />} />
