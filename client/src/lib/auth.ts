@@ -40,7 +40,7 @@ const fetchWithError = async (url: string, options: RequestInit) => {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.msg || `HTTP ${response.status}: ${response.statusText}`);
+      throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
     }
 
     return await response.json();
