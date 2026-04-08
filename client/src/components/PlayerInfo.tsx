@@ -5,6 +5,7 @@ import { getOtherPlayerDataById, getUserData } from "../lib/auth";
 import { GetQuizesByCreatorId } from "../lib/quiz";
 import logo from "../assets/carrot-diet-fruit-svgrepo-com.svg"
 import { CircleQuestionMark, UsersRoundIcon } from "lucide-react";
+import SEO from "./seo";
 
 
 
@@ -210,6 +211,10 @@ export default function PlayerInfo(){
   
     return (
         <>
+         <SEO
+        title={PlayerData?.username as string || "Player Info"} 
+        description={PlayerData !== null ? `Followers ${PlayerData?.followers?.length}` : `Player info`} 
+      />
                        <div className={`min-h-screen relative overflow-hidden transition-colors duration-500 ${isDark ? 'bg-[#0f0f0f]' : 'bg-[#f8f9fa]'}`}>
       {/* Subtle Background - Professional & Mature */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">

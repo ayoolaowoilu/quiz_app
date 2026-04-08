@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  
+  <!-- Landing Page -->
+  <url>
+    <loc>https://hyperquizes.netlify.app/</loc>
+    <lastmod>2026-04-08</lastmod>
+  </url>
+  
+  <!-- Auth Pages -->
+  <url>
+    <loc>https://hyperquizes.netlify.app/login</loc>
+    <lastmod>2026-04-08</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://hyperquizes.netlify.app/reg</loc>
+    <lastmod>2026-04-08</lastmod>
+  </url>
+  
+  <!-- Legal/Info Pages -->
+  <url>
+    <loc>https://hyperquizes.netlify.app/terms</loc>
+    <lastmod>2026-04-08</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://hyperquizes.netlify.app/privacy</loc>
+    <lastmod>2026-04-08</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://hyperquizes.netlify.app/about</loc>
+    <lastmod>2026-04-08</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://hyperquizes.netlify.app/contact</loc>
+    <lastmod>2026-04-08</lastmod>
+  </url>
+  
+  <!-- Feature Pages -->
+  <url>
+    <loc>https://hyperquizes.netlify.app/stats</loc>
+    <lastmod>2026-04-08</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://hyperquizes.netlify.app/explore</loc>
+    <lastmod>2026-04-08</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://hyperquizes.netlify.app/join-quiz</loc>
+    <lastmod>2026-04-08</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://hyperquizes.netlify.app/playerinfo</loc>
+    <lastmod>2026-04-08</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://hyperquizes.netlify.app/daily</loc>
+    <lastmod>2026-04-08</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://hyperquizes.netlify.app/category</loc>
+    <lastmod>2026-04-08</lastmod>
+  </url>
+  
+  <!-- Protected Routes (Auth Required) -->
+  <url>
+    <loc>https://hyperquizes.netlify.app/home</loc>
+    <lastmod>2026-04-08</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://hyperquizes.netlify.app/profile</loc>
+    <lastmod>2026-04-08</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://hyperquizes.netlify.app/setusername</loc>
+    <lastmod>2026-04-08</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://hyperquizes.netlify.app/create-quiz</loc>
+    <lastmod>2026-04-08</lastmod>
+  </url>
+
+</urlset>

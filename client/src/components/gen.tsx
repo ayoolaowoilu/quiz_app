@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import logo from "../assets/carrot-diet-fruit-svgrepo-com.svg"
+import SEO from './seo';
 
 export default function Gen() {
   const [isDark, setIsDark] = useState(() => {
@@ -26,6 +27,10 @@ export default function Gen() {
   return (
     <div className={`min-h-screen transition-colors duration-700 ${isDark ? 'bg-stone-950' : 'bg-orange-50'}`}>
       {/* Background Shapes - Hidden on mobile to prevent overlap */}
+       <SEO
+        title="Welcome" 
+        description="Create and play quizzes , top leaderboards and lots more" 
+      />
       <div className="fixed inset-0 overflow-hidden pointer-events-none hidden sm:block">
         <div className={`absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full blur-3xl transition-colors duration-700 ${isDark ? 'bg-orange-600/10' : 'bg-orange-300/30'}`}></div>
         <div className={`absolute -bottom-40 -left-20 w-[500px] h-[500px] rounded-full blur-3xl transition-colors duration-700 ${isDark ? 'bg-amber-600/10' : 'bg-amber-300/30'}`}></div>

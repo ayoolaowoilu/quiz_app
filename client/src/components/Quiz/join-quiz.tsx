@@ -39,6 +39,7 @@ import {
   Book,
 } from "lucide-react";
 import { getUserData } from "../../lib/auth";
+import SEO from "../seo";
 
 interface Quiz_loaded {
   id: number;
@@ -555,6 +556,10 @@ export default function JoinQuiz() {
     return (
       <div className={`min-h-screen relative ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
         <AnimatedBackground isDark={isDark} />
+         <SEO
+        title={quiz.quiz_name || "Join This Quiz"} 
+        description="Try this quiz" 
+      />
        
 
          <header className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 border-b ${scrolled ? (isDark ? 'bg-black/95 shadow-2xl shadow-orange-500/10 border-orange-500/30' : 'bg-white/95 shadow-lg shadow-orange-500/10 border-orange-200') : (isDark ? 'bg-black/80 border-orange-500/20' : 'bg-white/80 border-orange-100')} backdrop-blur-xl`}>

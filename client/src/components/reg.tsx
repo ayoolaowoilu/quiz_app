@@ -4,6 +4,7 @@ import { FormEvent, useState, useEffect } from "react"
 import { useNavigate, useSearchParams} from "react-router-dom"
 import { Notification } from "./notification"
 import { registerAuth } from "../lib/auth"
+import SEO from "./seo"
 
 export default function Register() {
   const [loading, setLoading] = useState(false)
@@ -108,6 +109,10 @@ export default function Register() {
 
   return (
     <div className={`min-h-screen relative overflow-hidden transition-colors duration-500 ${isDark ? 'bg-black' : 'bg-gradient-to-br from-orange-50 via-white to-amber-50'}`}>
+       <SEO
+        title="Create Account" 
+        description="Create a new HyperQuizes account" 
+      />
       {/* Animated Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className={`absolute top-0 right-1/4 w-96 h-96 rounded-full blur-[120px] animate-pulse ${isDark ? 'bg-orange-600/20' : 'bg-orange-300/40'}`}></div>

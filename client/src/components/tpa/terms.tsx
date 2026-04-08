@@ -1,5 +1,6 @@
 import logo from "../../assets/carrot-diet-fruit-svgrepo-com.svg"
 import { useState, useEffect, useRef } from "react"
+import SEO from "../seo";
 
 export default function Terms() {
   
@@ -174,11 +175,15 @@ We aim to respond to all inquiries within 48 hours.`
     }
   ]
 
-  document.title = "Terms of Service | Hyper Quizzes"
+
 
   return (
     <div className={`min-h-screen relative overflow-hidden transition-colors duration-500 ${isDark ? 'bg-black' : 'bg-gradient-to-br from-orange-50 via-white to-amber-50'}`}>
       {/* Animated Background Effects */}
+       <SEO
+        title="Terms of Service" 
+        description="Terms and conditions" 
+      />
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className={`absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full blur-[120px] animate-pulse transition-colors duration-700 ${isDark ? 'bg-orange-600/20' : 'bg-orange-300/30'}`}></div>
         <div className={`absolute -bottom-40 -left-20 w-[500px] h-[500px] rounded-full blur-[100px] animate-pulse delay-1000 transition-colors duration-700 ${isDark ? 'bg-orange-500/10' : 'bg-amber-300/30'}`}></div>

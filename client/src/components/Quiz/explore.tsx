@@ -22,6 +22,7 @@ import {
   CircleQuestionMark,
 } from "lucide-react";
 import { fetchRandomQuizzes, fetchSearchByQuery } from "../../lib/quiz";
+import SEO from "../seo";
 
 type QuizType = "TOF" | "MCQ" | "SAQ";
 
@@ -485,7 +486,10 @@ useEffect(()=>{
   return (
     <div className={`min-h-screen relative ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
       <AnimatedBackground isDark={isDark} />
-      
+       <SEO
+        title="Explore Popular Quizzes" 
+        description="discover Popular quizzes" 
+      />
       {/* Header - Clean, Professional */}
      <header className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 border-b ${scrolled ? (isDark ? 'bg-black/95 shadow-2xl shadow-orange-500/10 border-orange-500/30' : 'bg-white/95 shadow-lg shadow-orange-500/10 border-orange-200') : (isDark ? 'bg-black/80 border-orange-500/20' : 'bg-white/80 border-orange-100')} backdrop-blur-xl`}>
         <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">

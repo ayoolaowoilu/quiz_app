@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import { getUserData } from "../../lib/auth";
 import { Add_quiz } from "../../lib/quiz";
+import SEO from "../seo";
 
 type QuizType = "TOF" | "MCQ" | "SAQ";
 
@@ -394,7 +395,10 @@ const userid = localStorage.getItem("id")
   return (
     <div className={`min-h-screen relative ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
       <AnimatedBackground isDark={isDark} />
-      
+       <SEO
+        title="Create Quizzes" 
+        description="Lets push the creative agenda!" 
+      />
       {/* Header */}
       <header className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 border-b ${
         scrolled 

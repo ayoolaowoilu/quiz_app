@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import logo from "../assets/carrot-diet-fruit-svgrepo-com.svg"
 import { fetchCategoryQuiz } from "../lib/quiz";
+import SEO from "./seo";
 
 // Quiz_loaded interface definition
 interface Question {
@@ -407,6 +408,10 @@ export default function Category(){
 return (
       <div className={`min-h-screen relative overflow-hidden transition-colors duration-500 ${isDark ? 'bg-black' : 'bg-gradient-to-br from-orange-50 via-white to-amber-50'}`}>
       {/* Animated Background Effects */}
+       <SEO
+        title={category as string || "Categories"} 
+        description={category ? `All quizzes under the ${category} category` : "Popular categories"} 
+      />
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className={`absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full blur-[120px] animate-pulse transition-colors duration-700 ${isDark ? 'bg-orange-600/20' : 'bg-orange-300/30'}`}></div>
         <div className={`absolute -bottom-40 -left-20 w-[500px] h-[500px] rounded-full blur-[100px] animate-pulse delay-1000 transition-colors duration-700 ${isDark ? 'bg-orange-500/10' : 'bg-amber-300/30'}`}></div>

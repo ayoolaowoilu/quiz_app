@@ -4,6 +4,7 @@ import { getDaillyQuiz, updateDailyQuiz } from "../../lib/quiz";
 import { motion, AnimatePresence } from "framer-motion";
 import { BookAudioIcon, CheckCheckIcon, CircleQuestionMark, Gift, TimerIcon } from "lucide-react";
 import { getUserData } from "../../lib/auth";
+import SEO from "../seo";
 
 
 
@@ -464,6 +465,10 @@ export default function DailyQuiz() {
       <div className={`min-h-screen ${themeClasses} p-4 md:p-8 transition-colors duration-500`}>
         <div className="max-w-4xl mx-auto">
           {/* Header */}
+           <SEO
+        title="Daily Quizzes" 
+        description="Take the Daily challenge" 
+      />
           <motion.header 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}

@@ -4,6 +4,7 @@ import { FormEvent, useState, useEffect } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { Notification } from "./notification"
 import { loginAuth, logoutAuth } from "../lib/auth"
+import SEO from "./seo"
 
 export default function Login() {
   const [loading, setLoading] = useState(false)
@@ -99,6 +100,10 @@ export default function Login() {
     return (
       <div className={`min-h-screen flex items-center justify-center relative overflow-hidden transition-colors duration-500 ${isDark ? 'bg-black' : 'bg-gradient-to-br from-orange-50 to-amber-50'}`}>
         {/* Animated Background */}
+         <SEO
+        title="Login " 
+        description="Login to your account" 
+      />
         <div className="fixed inset-0 overflow-hidden pointer-events-none">
           <div className={`absolute top-0 left-1/4 w-96 h-96 rounded-full blur-[120px] animate-pulse ${isDark ? 'bg-orange-600/20' : 'bg-orange-300/40'}`}></div>
           <div className={`absolute bottom-0 right-1/4 w-80 h-80 rounded-full blur-[100px] animate-pulse delay-1000 ${isDark ? 'bg-orange-500/10' : 'bg-amber-300/40'}`}></div>
