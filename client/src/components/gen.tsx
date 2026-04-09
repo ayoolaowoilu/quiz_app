@@ -12,6 +12,8 @@ export default function Gen() {
     return false;
   });
 
+  const [activeFeature, setActiveFeature] = useState(0);
+
   useEffect(() => {
     if (isDark) {
       document.documentElement.classList.add('dark');
@@ -22,39 +24,79 @@ export default function Gen() {
     }
   }, [isDark]);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveFeature((prev) => (prev + 1) % features.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
   const toggleTheme = () => setIsDark(!isDark);
 
-  return (
-    <div className={`min-h-screen transition-colors duration-700 ${isDark ? 'bg-stone-950' : 'bg-orange-50'}`}>
-      {/* Background Shapes - Hidden on mobile to prevent overlap */}
-       <SEO
-        title="Welcome" 
-        description="Create and play quizzes , top leaderboards and lots more" 
-      />
-      <div className="fixed inset-0 overflow-hidden pointer-events-none hidden sm:block">
-        <div className={`absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full blur-3xl transition-colors duration-700 ${isDark ? 'bg-orange-600/10' : 'bg-orange-300/30'}`}></div>
-        <div className={`absolute -bottom-40 -left-20 w-[500px] h-[500px] rounded-full blur-3xl transition-colors duration-700 ${isDark ? 'bg-amber-600/10' : 'bg-amber-300/30'}`}></div>
-        <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full blur-3xl transition-colors duration-700 ${isDark ? 'bg-yellow-600/5' : 'bg-yellow-200/20'}`}></div>
-      </div>
+  const features = [
+    {
+      icon: '🎯',
+      title: 'Create Quizzes',
+      desc: 'Build engaging quizzes in minutes with our intuitive creator',
+      color: 'from-orange-500 to-amber-500'
+    },
+    {
+      icon: '🏆',
+      title: 'Leaderboards',
+      desc: 'Compete with friends and climb the global rankings',
+      color: 'from-amber-500 to-yellow-500'
+    },
+    {
+      icon: '📊',
+      title: 'Analytics',
+      desc: 'Track progress with detailed insights and statistics',
+      color: 'from-yellow-500 to-orange-400'
+    },
+    {
+      icon: '🎮',
+      title: 'Live Games',
+      desc: 'Host real-time quiz competitions with anyone',
+      color: 'from-orange-400 to-red-500'
+    },
+    {
+      icon: '🎨',
+      title: 'Custom Themes',
+      desc: 'Personalize your quizzes with beautiful designs',
+      color: 'from-red-500 to-pink-500'
+    },
+    {
+      icon: '🔥',
+      title: 'Daily Streaks',
+      desc: 'Stay consistent and earn bonus rewards',
+      color: 'from-pink-500 to-orange-500'
+    }
+  ];
 
-      {/* Navigation - Fixed padding for mobile */}
-      <nav className={`relative z-50 px-4 sm:px-6 lg:px-12 py-4 sm:py-6 transition-colors duration-500`}>
+  return (
+    <div className={`min-h-screen transition-colors duration-700 ${isDark ? 'bg-stone-950' : 'bg-stone-900'}`}>
+      <SEO
+        title="Welcome" 
+        description="Create and play quizzes, top leaderboards and lots more" 
+      />
+
+      {/* Navigation */}
+      <nav className={`fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 lg:px-12 py-4 transition-all duration-500 ${isDark ? 'bg-stone-950/80' : 'bg-stone-900/80'} backdrop-blur-md border-b ${isDark ? 'border-stone-800' : 'border-stone-800'}`}>
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className={`p-1.5 sm:p-2 rounded-xl transition-all duration-300 ${isDark ? 'bg-orange-500/20' : 'bg-white shadow-lg'}`}>
+            <div className={`p-1.5 sm:p-2 rounded-xl transition-all duration-300 ${isDark ? 'bg-orange-500/20' : 'bg-orange-500/20'}`}>
               <img 
                 src={logo} 
                 alt="Hyper Quizes" 
                 className="w-8 h-8 sm:w-10 sm:h-10 drop-shadow-sm"
               />
             </div>
-            <span className={`text-lg sm:text-xl font-bold tracking-tight transition-colors duration-300 ${isDark ? 'text-stone-100' : 'text-stone-800'}`}>
+            <span className={`text-lg sm:text-xl font-bold tracking-tight text-white`}>
               Hyper<span className="text-orange-500">Quizes</span>
             </span>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4">
-            <button className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-sm transition-all duration-300 hover:scale-105 ${isDark ? 'bg-orange-500 text-stone-950 hover:bg-orange-400' : 'bg-stone-900 text-white hover:bg-stone-800'}`}>
+            <button className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-sm transition-all duration-300 hover:scale-105 bg-orange-500 text-stone-950 hover:bg-orange-400`}>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
               </svg>
@@ -63,7 +105,7 @@ export default function Gen() {
             
             <button
               onClick={toggleTheme}
-              className={`p-2 sm:p-3 rounded-full transition-all duration-300 hover:scale-110 ${isDark ? 'bg-stone-800 text-amber-400 hover:bg-stone-700' : 'bg-white text-stone-600 shadow-md hover:shadow-lg'}`}
+              className={`p-2 sm:p-3 rounded-full transition-all duration-300 hover:scale-110 bg-stone-800 text-amber-400 hover:bg-stone-700`}
             >
               {isDark ? (
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -79,201 +121,179 @@ export default function Gen() {
         </div>
       </nav>
 
-      {/* Main Content - Proper spacing for mobile */}
-      <main className="relative z-10 px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-20">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
-            
-            {/* Left Content - Stack properly on mobile */}
-            <div className="space-y-6 sm:space-y-8 text-center lg:text-left">
-              {/* Badge - Smaller on mobile */}
-              <div className={`inline-flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium ${isDark ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' : 'bg-white text-orange-600 shadow-md'}`}>
-                <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-orange-500 animate-ping"></span>
-                Learning made fun 🎉
-              </div>
+      {/* Hero Section with Background Image */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="https://thumbs.dreamstime.com/b/abstract-gradient-background-combining-orange-yellow-dark-amber-black-perfect-texture-wallpaper-poster-template-banner-359248881.jpg"
+            alt="Hero Background"
+            className="w-full h-full object-cover"
+          />
+          {/* Overlay Gradient */}
+          <div className={`absolute inset-0 bg-gradient-to-b ${isDark ? 'from-stone-950/70 via-stone-950/50 to-stone-950' : 'from-stone-900/60 via-stone-900/40 to-stone-900'} transition-colors duration-700`}></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-black/60"></div>
+        </div>
 
-              {/* Main Heading - Responsive text sizes */}
-              <h1 className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black leading-tight tracking-tight transition-colors duration-300 ${isDark ? 'text-stone-100' : 'text-stone-900'}`}>
-                Grow Your <br className="hidden sm:block" />
-                <span className="relative inline-block">
-                  <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500">
-                    Knowledge
-                  </span>
-                  {/* Hide underline on very small screens */}
-                  <svg className="absolute -bottom-1 sm:-bottom-2 left-0 w-full h-2 sm:h-3 text-orange-400/30 hidden sm:block" viewBox="0 0 200 9" fill="none">
-                    <path d="M2.00025 6.99997C25.7509 9.37497 94.2509 9.37497 197.75 2.37497" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/>
+        {/* Animated Particles */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {[...Array(20)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-2 h-2 bg-orange-400/30 rounded-full animate-float-particle"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 5}s`,
+                animationDuration: `${5 + Math.random() * 5}s`
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Hero Content */}
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
+          <div className="text-center space-y-6 sm:space-y-8">
+            {/* Badge */}
+            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium backdrop-blur-md border ${isDark ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' : 'bg-white/10 text-orange-300 border-white/20'} animate-pulse-slow`}>
+              <span className="w-2 h-2 rounded-full bg-orange-500 animate-ping"></span>
+              Learning made fun 🎉
+            </div>
+
+            {/* Main Heading */}
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black leading-tight tracking-tight text-white drop-shadow-2xl">
+              Master Your<br />
+              <span className="relative inline-block">
+                <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-amber-400 to-yellow-400">
+                  Knowledge
+                </span>
+                <svg className="absolute -bottom-2 left-0 w-full h-4 text-orange-500/40" viewBox="0 0 200 9" fill="none">
+                  <path d="M2.00025 6.99997C25.7509 9.37497 94.2509 9.37497 197.75 2.37497" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/>
+                </svg>
+              </span>
+            </h1>
+
+            {/* Description */}
+            <p className={`text-lg sm:text-xl lg:text-2xl max-w-2xl mx-auto leading-relaxed ${isDark ? 'text-stone-300' : 'text-stone-200'} drop-shadow-lg`}>
+              Join <span className="text-orange-400 font-bold">50,000+</span> learners creating, sharing, and exploring quizzes that make learning <span className="text-amber-400 font-semibold">addictive</span>.
+            </p>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+              <a
+                href="/login"
+                className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-stone-950 rounded-full overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-orange-500/50"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 animate-gradient-shift"></div>
+                <span className="relative flex items-center gap-2">
+                  Start Learning Free
+                  <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
                   </svg>
                 </span>
-                <br className="hidden sm:block" />
-                Daily
-              </h1>
+              </a>
+              
+              <a
+                href="/explore"
+                className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold rounded-full border-2 border-white/30 text-white backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:bg-white/10 hover:border-white/50"
+              >
+                Browse Quizzes
+              </a>
+            </div>
 
-              {/* Description - Constrained width */}
-              <p className={`text-base sm:text-lg lg:text-xl max-w-lg mx-auto lg:mx-0 leading-relaxed transition-colors duration-300 ${isDark ? 'text-stone-400' : 'text-stone-600'}`}>
-                Join thousands of curious minds. Create, share, and explore quizzes 
-                that make learning <span className="text-orange-500 font-semibold">addictive</span> and 
-                <span className="text-amber-500 font-semibold"> rewarding</span>.
-              </p>
+            {/* Stats */}
+            <div className="flex flex-wrap justify-center gap-8 sm:gap-12 pt-8">
+              {[
+                { value: '50K+', label: 'Active Learners' },
+                { value: '100K+', label: 'Quizzes' },
+                { value: '4.9★', label: 'App Rating' }
+              ].map((stat, i) => (
+                <div key={i} className="text-center">
+                  <div className="text-2xl sm:text-3xl font-bold text-white drop-shadow-lg">{stat.value}</div>
+                  <div className={`text-sm ${isDark ? 'text-stone-400' : 'text-stone-300'}`}>{stat.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
 
-              {/* Feature Tags - Wrap properly */}
-              <div className="flex flex-wrap justify-center lg:justify-start gap-2 sm:gap-3">
-                {['Business', 'Education', 'Trivia', 'Research'].map((tag, i) => (
-                  <span 
-                    key={i} 
-                    className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-300 hover:scale-105 cursor-default ${isDark ? 'bg-stone-800 text-stone-300 hover:bg-stone-700' : 'bg-white text-stone-700 shadow-sm hover:shadow-md'}`}
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
+        {/* Scroll Indicator */}
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+          <svg className="w-6 h-6 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+          </svg>
+        </div>
+      </section>
 
-              {/* CTA Buttons - Stack on mobile, side by side on larger */}
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-2 sm:pt-4 justify-center lg:justify-start">
-                <a
-                  href="/login"
-                  className="group relative inline-flex items-center justify-center px-6 py-3 sm:px-8 sm:py-4 text-base sm:text-lg font-bold text-white rounded-full overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-orange-500/25"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 animate-gradient-shift"></div>
-                  <span className="relative flex items-center gap-2">
-                    Start Learning Free
-                    <svg className="w-4 h-4 sm:w-5 sm:h-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-                    </svg>
-                  </span>
-                </a>
+      {/* Features Section */}
+      <section className={`relative py-20 sm:py-32 ${isDark ? 'bg-stone-950' : 'bg-stone-900'} transition-colors duration-700`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Section Header */}
+          <div className="text-center mb-16">
+            <h2 className={`text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 ${isDark ? 'text-white' : 'text-white'}`}>
+              Everything You Need to <span className="text-orange-500">Learn</span>
+            </h2>
+            <p className={`text-lg max-w-2xl mx-auto ${isDark ? 'text-stone-400' : 'text-stone-400'}`}>
+              Powerful features designed to make your learning journey engaging and effective
+            </p>
+          </div>
+
+          {/* Feature Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {features.map((feature, index) => (
+              <div
+                key={index}
+                onClick={() => setActiveFeature(index)}
+                className={`group relative p-6 sm:p-8 rounded-3xl cursor-pointer transition-all duration-500 hover:scale-105 ${
+                  activeFeature === index 
+                    ? 'bg-gradient-to-br ' + feature.color + ' shadow-2xl shadow-orange-500/20' 
+                    : isDark ? 'bg-stone-900/80 border border-stone-800 hover:border-orange-500/30' : 'bg-stone-800/80 border border-stone-700 hover:border-orange-500/30'
+                }`}
+              >
+                <div className={`text-4xl sm:text-5xl mb-4 transition-transform duration-300 group-hover:scale-110 ${activeFeature === index ? 'text-white' : ''}`}>
+                  {feature.icon}
+                </div>
+                <h3 className={`text-xl sm:text-2xl font-bold mb-2 ${activeFeature === index ? 'text-white' : isDark ? 'text-stone-100' : 'text-white'}`}>
+                  {feature.title}
+                </h3>
+                <p className={`text-sm sm:text-base ${activeFeature === index ? 'text-white/90' : isDark ? 'text-stone-400' : 'text-stone-400'}`}>
+                  {feature.desc}
+                </p>
                 
-                <a
-                  href="/explore"
-                  className={`inline-flex items-center justify-center px-6 py-3 sm:px-8 sm:py-4 text-base sm:text-lg font-semibold rounded-full border-2 transition-all duration-300 hover:scale-105 ${isDark ? 'border-stone-700 text-stone-300 hover:border-orange-500/50 hover:bg-orange-500/10' : 'border-stone-300 text-stone-700 hover:border-orange-400 hover:bg-orange-50'}`}
-                >
-                  Browse Quizzes
-                </a>
-              </div>
-
-              {/* Stats Row - Scroll horizontally on small mobile if needed */}
-              <div className={`flex flex-wrap items-center justify-center lg:justify-start gap-4 sm:gap-8 pt-6 sm:pt-8 border-t transition-colors duration-300 ${isDark ? 'border-stone-800' : 'border-stone-200'}`}>
-                <div className="text-center">
-                  <div className={`text-2xl sm:text-3xl font-bold transition-colors duration-300 ${isDark ? 'text-stone-100' : 'text-stone-900'}`}>50K+</div>
-                  <div className={`text-xs sm:text-sm transition-colors duration-300 ${isDark ? 'text-stone-500' : 'text-stone-500'}`}>Active Learners</div>
-                </div>
-                <div className={`hidden sm:block w-px h-10 sm:h-12 transition-colors duration-300 ${isDark ? 'bg-stone-800' : 'bg-stone-200'}`}></div>
-                <div className="text-center">
-                  <div className={`text-2xl sm:text-3xl font-bold transition-colors duration-300 ${isDark ? 'text-stone-100' : 'text-stone-900'}`}>100K+</div>
-                  <div className={`text-xs sm:text-sm transition-colors duration-300 ${isDark ? 'text-stone-500' : 'text-stone-500'}`}>Quizzes</div>
-                </div>
-                <div className={`hidden sm:block w-px h-10 sm:h-12 transition-colors duration-300 ${isDark ? 'bg-stone-800' : 'bg-stone-200'}`}></div>
-                {/* Avatar group - Hidden on very small screens */}
-                <div className="hidden sm:flex -space-x-3">
-                  {[1,2,3,4].map((i) => (
-                    <div key={i} className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 flex items-center justify-center text-xs sm:text-sm font-bold ${isDark ? 'border-stone-950 bg-gradient-to-br from-orange-400 to-amber-500' : 'border-white bg-gradient-to-br from-orange-400 to-amber-500'}`}>
-                      {String.fromCharCode(64 + i)}
-                    </div>
-                  ))}
-                  <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 flex items-center justify-center text-xs font-medium ${isDark ? 'border-stone-950 bg-stone-800 text-stone-400' : 'border-white bg-stone-100 text-stone-600'}`}>
-                    +2k
-                  </div>
+                {/* Hover Arrow */}
+                <div className={`absolute top-6 right-6 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${activeFeature === index ? 'bg-white/20' : 'bg-stone-800 group-hover:bg-orange-500/20'}`}>
+                  <svg className={`w-5 h-5 transition-colors duration-300 ${activeFeature === index ? 'text-white' : 'text-stone-500 group-hover:text-orange-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
+                  </svg>
                 </div>
               </div>
-            </div>
+            ))}
+          </div>
 
-            {/* Right Content - Hidden on mobile, shown on lg */}
-            <div className="relative hidden lg:block">
-              <div className="relative max-w-md mx-auto">
-                {/* Decorative Elements */}
-                <div className="absolute -top-8 -right-8 w-24 h-24 bg-orange-400 rounded-full opacity-20 blur-2xl animate-pulse"></div>
-                <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-amber-400 rounded-full opacity-20 blur-2xl animate-pulse delay-700"></div>
-
-                {/* Main Card */}
-                <div className={`relative rounded-3xl p-6 shadow-2xl transition-all duration-500 ${isDark ? 'bg-stone-900/80 border border-stone-800' : 'bg-white border border-stone-100'}`}>
-                  
-                  {/* Card Header */}
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center text-white text-xl">
-                        🎯
-                      </div>
-                      <div>
-                        <div className={`font-bold transition-colors duration-300 ${isDark ? 'text-stone-100' : 'text-stone-900'}`}>Daily Challenge</div>
-                        <div className={`text-sm transition-colors duration-300 ${isDark ? 'text-stone-500' : 'text-stone-500'}`}>Business Strategy</div>
-                      </div>
-                    </div>
-                    <div className={`px-3 py-1 rounded-full text-xs font-bold ${isDark ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-700'}`}>
-                      Live
-                    </div>
-                  </div>
-
-                  {/* Progress */}
-                  <div className="mb-6">
-                    <div className="flex justify-between text-sm mb-2">
-                      <span className={`transition-colors duration-300 ${isDark ? 'text-stone-400' : 'text-stone-600'}`}>Your Progress</span>
-                      <span className="font-bold text-orange-500">75%</span>
-                    </div>
-                    <div className={`h-3 rounded-full overflow-hidden ${isDark ? 'bg-stone-800' : 'bg-stone-100'}`}>
-                      <div className="h-full w-3/4 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full relative">
-                        <div className="absolute inset-0 bg-white/30 animate-shimmer"></div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Question */}
-                  <div className={`p-4 rounded-2xl mb-4 transition-colors duration-300 ${isDark ? 'bg-stone-800/50' : 'bg-orange-50/50'}`}>
-                    <div className={`text-sm mb-1 transition-colors duration-300 ${isDark ? 'text-stone-500' : 'text-stone-500'}`}>Question 3 of 5</div>
-                    <div className={`font-medium mb-4 transition-colors duration-300 ${isDark ? 'text-stone-200' : 'text-stone-800'}`}>
-                      What is the primary objective of Porter's Five Forces analysis?
-                    </div>
-                    <div className="space-y-2">
-                      {['Market segmentation', 'Competitive analysis', 'Reduce costs'].map((opt, idx) => (
-                        <button 
-                          key={idx}
-                          className={`w-full text-left p-3 rounded-xl text-sm transition-all duration-200 ${idx === 1 ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/25' : isDark ? 'bg-stone-800 text-stone-400 hover:bg-stone-700' : 'bg-white text-stone-600 hover:bg-orange-100'}`}
-                        >
-                          {opt}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Streak Badge */}
-                  <div className={`flex items-center justify-center gap-2 p-3 rounded-xl border transition-colors duration-300 ${isDark ? 'border-stone-800 bg-stone-800/30' : 'border-orange-200 bg-orange-50'}`}>
-                    <span className="text-2xl">🔥</span>
-                    <div>
-                      <div className={`font-bold transition-colors duration-300 ${isDark ? 'text-stone-200' : 'text-stone-800'}`}>5 Day Streak!</div>
-                      <div className={`text-xs transition-colors duration-300 ${isDark ? 'text-stone-500' : 'text-stone-600'}`}>Keep it up to earn 2x points</div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Floating Notification */}
-                <div className={`absolute -bottom-6 -left-6 p-4 rounded-2xl shadow-xl border animate-bounce-slow transition-colors duration-300 ${isDark ? 'bg-stone-800 border-stone-700' : 'bg-white border-stone-100'}`}>
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isDark ? 'bg-green-500/20' : 'bg-green-100'}`}>
-                      <svg className={`w-5 h-5 ${isDark ? 'text-green-400' : 'text-green-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                      </svg>
-                    </div>
-                    <div>
-                      <div className={`font-bold text-sm transition-colors duration-300 ${isDark ? 'text-stone-200' : 'text-stone-800'}`}>Correct!</div>
-                      <div className={`text-xs transition-colors duration-300 ${isDark ? 'text-stone-500' : 'text-stone-500'}`}>+50 points earned</div>
-                    </div>
-                  </div>
-                </div>
+          {/* Active Feature Preview */}
+          <div className={`mt-12 p-8 rounded-3xl border ${isDark ? 'bg-stone-900/50 border-stone-800' : 'bg-stone-800/50 border-stone-700'} backdrop-blur-sm`}>
+            <div className="flex flex-col lg:flex-row items-center gap-8">
+              <div className={`w-full lg:w-1/2 h-64 rounded-2xl bg-gradient-to-br ${features[activeFeature].color} flex items-center justify-center text-8xl shadow-2xl`}>
+                {features[activeFeature].icon}
               </div>
-            </div>
-
-            {/* Mobile Visual - Centered, not overlapping */}
-            <div className="lg:hidden flex justify-center pt-8">
-              <div className="relative">
-                <div className={`absolute inset-0 rounded-full blur-2xl animate-pulse ${isDark ? 'bg-orange-500/20' : 'bg-orange-400/30'}`}></div>
-                <img 
-                  src={logo}
-                  alt="Hyper Quizes" 
-                  className={`relative w-32 h-32 sm:w-40 sm:h-40 animate-float ${isDark ? 'drop-shadow-[0_0_30px_rgba(249,115,22,0.3)]' : 'drop-shadow-2xl'}`}
-                />
+              <div className="w-full lg:w-1/2 space-y-4">
+                <h3 className={`text-2xl sm:text-3xl font-bold ${isDark ? 'text-white' : 'text-white'}`}>
+                  {features[activeFeature].title}
+                </h3>
+                <p className={`text-lg ${isDark ? 'text-stone-300' : 'text-stone-300'}`}>
+                  {features[activeFeature].desc}. Experience the future of learning with our cutting-edge {features[activeFeature].title.toLowerCase()} feature. Designed for maximum engagement and retention.
+                </p>
+                <button className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-orange-500 text-stone-950 font-semibold hover:bg-orange-400 transition-all duration-300 hover:scale-105">
+                  Try {features[activeFeature].title}
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                  </svg>
+                </button>
               </div>
             </div>
           </div>
         </div>
-      </main>
+      </section>
 
       {/* Styles */}
       <style>{`
@@ -285,26 +305,25 @@ export default function Gen() {
           background-size: 200% auto;
           animation: gradient-shift 3s ease infinite;
         }
-        @keyframes shimmer {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
+        @keyframes float-particle {
+          0%, 100% { 
+            transform: translateY(0) translateX(0); 
+            opacity: 0.3;
+          }
+          50% { 
+            transform: translateY(-100px) translateX(50px); 
+            opacity: 0.8;
+          }
         }
-        .animate-shimmer {
-          animation: shimmer 2s infinite;
+        .animate-float-particle {
+          animation: float-particle linear infinite;
         }
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-15px); }
+        @keyframes pulse-slow {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.8; }
         }
-        .animate-float {
-          animation: float 4s ease-in-out infinite;
-        }
-        @keyframes bounce-slow {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-10px); }
-        }
-        .animate-bounce-slow {
-          animation: bounce-slow 3s ease-in-out infinite;
+        .animate-pulse-slow {
+          animation: pulse-slow 3s ease-in-out infinite;
         }
       `}</style>
     </div>
