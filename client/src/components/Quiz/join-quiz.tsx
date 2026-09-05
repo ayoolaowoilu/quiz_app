@@ -242,9 +242,11 @@ const RefreshCcwIcon = (props: IconProps) => (
 
 
 
-const TAKEN_DB_NAME = "hyperquizzes-db";
+const APP_DB_NAME = "hyperquizzes-db";
 const TAKEN_STORE_NAME = "taken_quizzes";
-const TAKEN_DB_VERSION = 1;
+const SESSION_STORE_NAME = "quiz_sessions";
+// Bumped from 1 -> 2 to add the quiz_sessions store alongside the existing taken_quizzes store.
+const APP_DB_VERSION = 2;
 
 interface TakenQuizRecord {
   id: number;
@@ -258,18 +260,34 @@ interface TakenQuizRecord {
   dateTaken: number;
 }
 
-function openTakenQuizzesDB(): Promise<IDBDatabase> {
+// A session is the "resume point" for a quiz that's in progress: which question
+// the user is on, what they've answered so far, and how much time is left.
+// Keyed by quiz id, so a hard refresh / accidental close / crash can pick back
+// up exactly where the user left off instead of restarting the quiz.
+interface QuizSessionRecord {
+  id: number; // quiz_id
+  currentQuestionIndex: number;
+  selectedAnswers: Record<number, string>;
+  timeRemaining: number | null; // null when the quiz isn't timed
+  startedAt: number;
+  lastUpdated: number;
+}
+
+function openAppDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     if (typeof indexedDB === "undefined") {
       reject(new Error("IndexedDB not available"));
       return;
     }
-    const request = indexedDB.open(TAKEN_DB_NAME, TAKEN_DB_VERSION);
+    const request = indexedDB.open(APP_DB_NAME, APP_DB_VERSION);
     request.onupgradeneeded = () => {
       const db = request.result;
       if (!db.objectStoreNames.contains(TAKEN_STORE_NAME)) {
         const store = db.createObjectStore(TAKEN_STORE_NAME, { keyPath: "id" });
         store.createIndex("dateTaken", "dateTaken");
+      }
+      if (!db.objectStoreNames.contains(SESSION_STORE_NAME)) {
+        db.createObjectStore(SESSION_STORE_NAME, { keyPath: "id" });
       }
     };
     request.onsuccess = () => resolve(request.result);
@@ -279,7 +297,7 @@ function openTakenQuizzesDB(): Promise<IDBDatabase> {
 
 async function saveTakenQuiz(record: TakenQuizRecord): Promise<void> {
   try {
-    const db = await openTakenQuizzesDB();
+    const db = await openAppDB();
     await new Promise<void>((resolve, reject) => {
       const tx = db.transaction(TAKEN_STORE_NAME, "readwrite");
       tx.objectStore(TAKEN_STORE_NAME).put(record);
@@ -293,7 +311,7 @@ async function saveTakenQuiz(record: TakenQuizRecord): Promise<void> {
 
 async function getAllTakenQuizzes(): Promise<TakenQuizRecord[]> {
   try {
-    const db = await openTakenQuizzesDB();
+    const db = await openAppDB();
     return await new Promise((resolve, reject) => {
       const tx = db.transaction(TAKEN_STORE_NAME, "readonly");
       const req = tx.objectStore(TAKEN_STORE_NAME).getAll();
@@ -303,6 +321,49 @@ async function getAllTakenQuizzes(): Promise<TakenQuizRecord[]> {
   } catch (err) {
     console.error("Failed to load taken quizzes from IndexedDB:", err);
     return [];
+  }
+}
+
+async function saveQuizSession(record: QuizSessionRecord): Promise<void> {
+  try {
+    const db = await openAppDB();
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(SESSION_STORE_NAME, "readwrite");
+      tx.objectStore(SESSION_STORE_NAME).put(record);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  } catch (err) {
+    console.error("Failed to save quiz session to IndexedDB:", err);
+  }
+}
+
+async function getQuizSession(quizId: number): Promise<QuizSessionRecord | undefined> {
+  try {
+    const db = await openAppDB();
+    return await new Promise((resolve, reject) => {
+      const tx = db.transaction(SESSION_STORE_NAME, "readonly");
+      const req = tx.objectStore(SESSION_STORE_NAME).get(quizId);
+      req.onsuccess = () => resolve(req.result || undefined);
+      req.onerror = () => reject(req.error);
+    });
+  } catch (err) {
+    console.error("Failed to load quiz session from IndexedDB:", err);
+    return undefined;
+  }
+}
+
+async function deleteQuizSession(quizId: number): Promise<void> {
+  try {
+    const db = await openAppDB();
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(SESSION_STORE_NAME, "readwrite");
+      tx.objectStore(SESSION_STORE_NAME).delete(quizId);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  } catch (err) {
+    console.error("Failed to delete quiz session from IndexedDB:", err);
   }
 }
 
@@ -413,7 +474,7 @@ const Button = ({ children, onClick, disabled = false, variant = "primary", clas
 export default function JoinQuiz() {
   const [quiz, setQuiz] = useState<Quiz_loaded | any>(null);
   const [stage, setStage] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7>(1);
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
     const [profileOpen, setProfileOpen] = useState(false)
@@ -436,6 +497,13 @@ export default function JoinQuiz() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [exploreQuery, setExploreQuery] = useState("");
+
+  // Tracks when the current attempt began, so a restored session keeps its
+  // original start time instead of resetting the clock on every reload.
+  const sessionStartedAtRef = useRef<number>(Date.now());
+  // Prevents fetchData from re-checking/overwriting an already-restored session
+  // if it somehow runs more than once for the same quiz id.
+  const sessionRestoredForRef = useRef<number | null>(null);
 
   // Likes — kept as local state so the UI actually re-renders on click
   const [likedQuizzes, setLikedQuizzes] = useState<number[]>(() => {
@@ -605,7 +673,43 @@ console.log(quiz)
             }
           }
 
-          
+
+          // Look for an in-progress session for this quiz (question index, answers,
+          // time remaining) so a hard refresh / crash / accidental close resumes
+          // exactly where the user left off instead of restarting the quiz.
+          const session = await getQuizSession(Number(quiz_id));
+
+          if (session) {
+            let restoredTimeRemaining = 0;
+            let expired = false;
+
+            if (quizResp.isTimed && session.timeRemaining !== null) {
+              const elapsedSincePersist = Math.floor((Date.now() - session.lastUpdated) / 1000);
+              restoredTimeRemaining = Math.max(0, session.timeRemaining - elapsedSincePersist);
+              expired = restoredTimeRemaining <= 0;
+            }
+
+            if (expired) {
+              // Time ran out while the user was away — the attempt is stale,
+              // so clear it and let them start a fresh attempt.
+              await deleteQuizSession(Number(quiz_id));
+            } else {
+              sessionStartedAtRef.current = session.startedAt;
+              sessionRestoredForRef.current = Number(quiz_id);
+              setSelectedAnswers(session.selectedAnswers || {});
+              setCurrentQuestionIndex(
+                Math.min(session.currentQuestionIndex || 0, Math.max((quizResp.questions?.length || 1) - 1, 0))
+              );
+              if (quizResp.isTimed) {
+                setTimeRemaining(restoredTimeRemaining);
+              }
+              setQuizResult(null);
+              setStage(2);
+              setIsLoading(false);
+              return;
+            }
+          }
+
           setStage(1);
           setCurrentQuestionIndex(0);
           setSelectedAnswers({});
@@ -633,27 +737,91 @@ console.log(quiz)
     if (stage === 2 && quiz?.isTimed && timeRemaining > 0) {
       interval = setInterval(() => {
         setTimeRemaining((prev) => {
+          const next = prev <= 1 ? 0 : prev - 1;
+
+          // Throttle timer-driven writes to IndexedDB so we're not hitting it
+          // every second — every 5s (and on the final tick) is enough to keep
+          // a resumed session's clock roughly honest.
+          if (quiz_id && (next % 5 === 0 || next === 0)) {
+            saveQuizSession({
+              id: Number(quiz_id),
+              currentQuestionIndex,
+              selectedAnswers,
+              timeRemaining: next,
+              startedAt: sessionStartedAtRef.current,
+              lastUpdated: Date.now(),
+            });
+          }
+
           if (prev <= 1) {
             handleSubmitQuiz();
             return 0;
           }
-          return prev - 1;
+          return next;
         });
       }, 1000);
     }
     return () => clearInterval(interval);
   }, [stage, quiz, timeRemaining]);
 
+  // Whenever the current question or the set of answers changes while a quiz
+  // is actively being taken, persist the session immediately (this covers
+  // Next/Prev navigation and every answer selection — the cases that matter
+  // most for "don't lose my place on a hard refresh").
+  useEffect(() => {
+    if (stage === 2 && quiz_id) {
+      saveQuizSession({
+        id: Number(quiz_id),
+        currentQuestionIndex,
+        selectedAnswers,
+        timeRemaining: quiz?.isTimed ? timeRemaining : null,
+        startedAt: sessionStartedAtRef.current,
+        lastUpdated: Date.now(),
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage, quiz_id, currentQuestionIndex, selectedAnswers]);
+
+  // Mirror the current question into the URL (?q=) while taking the quiz, so
+  // the link itself points at the right question on reload/share, in addition
+  // to the IndexedDB session above.
+  useEffect(() => {
+    if (stage === 2) {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          next.set("q", String(currentQuestionIndex));
+          return next;
+        },
+        { replace: true }
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage, currentQuestionIndex]);
+
   const toggleDarkMode = () => setIsDark(!isDark);
 
   const handleStartQuiz = () => {
+    const initialTimeRemaining = quiz?.isTimed ? quiz.duration * 60 : 0;
     if (quiz?.isTimed) {
-      setTimeRemaining(quiz.duration * 60);
+      setTimeRemaining(initialTimeRemaining);
     }
     setCurrentQuestionIndex(0);
     setSelectedAnswers({});
     setQuizResult(null);
     setStage(2);
+
+    sessionStartedAtRef.current = Date.now();
+    if (quiz_id) {
+      saveQuizSession({
+        id: Number(quiz_id),
+        currentQuestionIndex: 0,
+        selectedAnswers: {},
+        timeRemaining: quiz?.isTimed ? initialTimeRemaining : null,
+        startedAt: sessionStartedAtRef.current,
+        lastUpdated: Date.now(),
+      });
+    }
   };
 
   const handleAnswerSelect = (answer: string) => {
@@ -695,6 +863,9 @@ console.log(quiz)
     // Show results immediately (optimistic UI)
     setQuizResult({ score, correctAnswers: correctCount, totalQuestions: quiz.questions.length, timeTaken, passed });
     setStage(3);
+
+    // The attempt is finished — nothing left to resume, so drop the session.
+    deleteQuizSession(Number(quiz_id));
 
     // Persist this attempt locally so the user can revisit it from the home screen
     saveTakenQuiz({
